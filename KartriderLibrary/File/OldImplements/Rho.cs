@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using KartLibrary.Encrypt;
+﻿using KartLibrary.Encrypt;
 using KartLibrary.IO;
-using System.Diagnostics;
-using KartLibrary.File;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 
 namespace KartLibrary.File
 {
-    [Obsolete("Rho class is deprecated. Use RhoArchive instead.")]
     public class Rho : IDisposable
     {
         public Stream baseStream;

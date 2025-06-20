@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>False</UseWindowsForms>
+
+    <!--PublishAot>true</PublishAot-->
+    <PublishSingleFile>true</PublishSingleFile>
+    <PublishReadyToRun>true</PublishReadyToRun>
+
+    <RuntimeIdentifiers>win-x86;win-x64</RuntimeIdentifiers>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+
+    <AssemblyName>KRPackTool</AssemblyName>
+    <RootNamespace>KRPackTool</RootNamespace>
+    <ApplicationIcon>lkk_Icon.ico</ApplicationIcon>
+
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>2</WarningLevel>
+    <PublishDir>.\</PublishDir>
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <WarningLevel>2</WarningLevel>
+    <PublishDir>.\</PublishDir>
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <WarningLevel>2</WarningLevel>
+    <PublishDir>.\</PublishDir>
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <WarningLevel>2</WarningLevel>
+    <PublishDir>.\</PublishDir>
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="win-x64\**" />
+    <EmbeddedResource Remove="win-x64\**" />
+    <None Remove="win-x64\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="lkk_Icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Ionic.Zlib.Core" Version="1.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+	
+</Project>

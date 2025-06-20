@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Ionic.Zlib;
 using KartLibrary.Encrypt;
 using System.IO;
-using Ionic.Zlib;
+using System.Text;
 
 namespace KartLibrary.File
 {
-    [Obsolete("Rho5FileInfo class is deprecated. Use Rho5File instead.")]
     public class Rho5FileInfo
     {
         internal Rho5 BaseRho5 { get; init; }

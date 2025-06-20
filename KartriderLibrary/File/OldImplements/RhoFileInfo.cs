@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using KartLibrary.Encrypt;
 using System.Text;
-using System.Threading.Tasks;
-using KartLibrary.Encrypt;
-using KartLibrary.File;
 
 namespace KartLibrary.File
 {
-    [Obsolete("RhoFileInfo class is deprecated. Use RhoFile instead.")]
     public class RhoFileInfo
     {
         public Rho BaseRho { get; set; }

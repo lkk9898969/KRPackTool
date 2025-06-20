@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Launcher": {
+      "commandName": "Project",
+      "commandLineArgs": "D:\\Kartrider\\PPpacked\\test\\stage_timeAttack\r\nD:\\Kartrider\\PPpacked\\test\\track_desert_A02"
+    }
+  }
+}

@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿using KartLibrary.Consts;
 using KartLibrary.Encrypt;
 using KartLibrary.IO;
-using KartLibrary.Consts;
+using System;
 using System.IO;
+using System.Text;
 
 namespace KartLibrary.File
 {
-    [Obsolete("Rho5 class is deprecated. Use Rho5Archive instead.")]
     public class Rho5 : IDisposable
     {
         public byte PackageVersion { get; set; }

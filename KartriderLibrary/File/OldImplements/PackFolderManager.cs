@@ -1,17 +1,15 @@
+using KartLibrary.Consts;
+using KartLibrary.Data;
+using KartLibrary.Xml;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.ComponentModel;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using KartLibrary.Xml;
-using System.IO;
-using System.ComponentModel;
-using KartLibrary.Data;
-using KartLibrary.Consts;
 
 namespace KartLibrary.File
 {
-    [Obsolete("PackFolderManager class is deprecated. Use RhoStorageSystem instead.")]
     public class PackFolderManager
     {
         public bool Initizated { get; private set; } = false;

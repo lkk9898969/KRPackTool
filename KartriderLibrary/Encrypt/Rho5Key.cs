@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
+using System.Text;
 
 namespace KartLibrary.Encrypt
 {
@@ -675,7 +672,6 @@ namespace KartLibrary.Encrypt
 
                 }
             }
-            return new Vector128<double>();
         }
 
         private unsafe static Vector128<double> LoadVector128LH(double* address)

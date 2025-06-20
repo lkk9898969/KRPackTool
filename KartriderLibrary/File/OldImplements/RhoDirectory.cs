@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using KartLibrary.Encrypt;
-using System.IO;
 
 namespace KartLibrary.File
 {
-    [Obsolete("RhoDirectory class is deprecated. Use RhoFolder instead.")]
     public class RhoDirectory
     {
         public static Dictionary<RhoFileProperty, Dictionary<string, int>> counter = new Dictionary<RhoFileProperty, Dictionary<string, int>>();

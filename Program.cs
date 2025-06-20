@@ -3,185 +3,93 @@ using KartLibrary.Data;
 using KartLibrary.File;
 using KartLibrary.Xml;
 using KartRider.IO.Packet;
-using Microsoft.Win32;
-using RHOParser;
-using Set_Data;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Diagnostics;
 using System.IO;
-using System.Text;
-using System.Windows.Forms;
-using System.Xml;
 using System.Linq;
-using System.Xml.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Linq;
 
-namespace KartRider
+namespace KRPackTool
 {
     internal static class Program
     {
-        [DllImport("kernel32.dll")]
-        public static extern bool AllocConsole();
-
-        [DllImport("user32.dll")]
-        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-        const int SW_HIDE = 0;
-        public static Launcher LauncherDlg;
-        public static GetKart GetKartDlg;
-        public static bool SpeedPatch;
-        public static bool PreventItem;
-        public static string RootDirectory;
-        public static CountryCode CC = CountryCode.CN;
+        public static CountryCode CC = CountryCode.TW;
+        static readonly string[] datapack = { "boss", "character", "dialog", "dialog2", "effect", "etc_", "flyingPet", "gui", "item", "kart_", "myRoom", "pet", "sound", "stage", "stuff", "stuff2", "theme", "track", "trackThumb", "track_", "zeta", "zeta_" };
 
         [STAThread]
         private static async Task Main(string[] args)
         {
-            string input;
-            string output;
-            string Update_File = AppDomain.CurrentDomain.BaseDirectory + "Update.bat";
-            string Update_Folder = AppDomain.CurrentDomain.BaseDirectory + "Update";
-            if (File.Exists(Update_File))
-            {
-                File.Delete(Update_File);
-            }
-            if (Directory.Exists(Update_Folder))
-            {
-                Directory.Delete(Update_Folder, true);
-            }
-            AllocConsole();
             Console.OutputEncoding = Encoding.UTF8;
             Console.InputEncoding = Encoding.UTF8;
-            if (!await Update.UpdateDataAsync())
+            string Load_CC = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CountryCode.ini");
+            if (File.Exists(Load_CC))
             {
-                string Load_CC = AppDomain.CurrentDomain.BaseDirectory + "Profile\\CountryCode.ini";
-                if (File.Exists(Load_CC))
+                string textValue = System.IO.File.ReadAllText(Load_CC);
+                Program.CC = (CountryCode)Enum.Parse(typeof(CountryCode), textValue);
+            }
+            else
+            {
+                using (StreamWriter streamWriter = new StreamWriter(Load_CC, false))
                 {
-                    string textValue = System.IO.File.ReadAllText(Load_CC);
-                    Program.CC = (CountryCode)Enum.Parse(typeof(CountryCode), textValue);
+                    streamWriter.Write(Program.CC.ToString());
+                }
+            }
+            foreach (var arg in args)
+            {
+                if (arg.EndsWith(".rho") || arg.EndsWith(".rho5"))
+                {
+                    Program.decode(arg, arg);
+                }
+                else if (arg.EndsWith("aaa.xml"))
+                {
+                    Program.AAAD(arg);
+                }
+                else if (arg.EndsWith(".xml"))
+                {
+                    Program.XtoB(arg);
+                }
+                else if (arg.EndsWith(".bml"))
+                {
+                    Program.BtoX(arg);
+                }
+                else if (arg.EndsWith(".pk"))
+                {
+                    Program.AAAR(arg);
                 }
                 else
                 {
-                    if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "Profile"))
+                    if (!Directory.Exists(arg))
+                        return;
+                    var temp = Directory.GetDirectories(arg);
+                    if (temp.All(dir => datapack.Contains(Path.GetFileName(dir))) && temp.Length != 0)
                     {
-                        Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "Profile");
-                    }
-                    using (StreamWriter streamWriter = new StreamWriter(Load_CC, false))
-                    {
-                        streamWriter.Write(Program.CC.ToString());
-                    }
-                }
-                if (args == null || args.Length == 0)
-                {
-                    string text = "HKEY_CURRENT_USER\\SOFTWARE\\TCGame\\kart";
-                    RootDirectory = (string)Registry.GetValue(text, "gamepath", null);
-                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + "KartRider.pin") && File.Exists(AppDomain.CurrentDomain.BaseDirectory + "KartRider.exe"))
-                    {
-                        RootDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                    }
-                    else if (File.Exists(RootDirectory + "KartRider.pin") && File.Exists(RootDirectory + "KartRider.exe"))
-                    {
+                        Program.encode(arg, arg);
                     }
                     else
                     {
-                        LauncherSystem.MessageBoxType3();
-                        return;
-                    }
-                    if (!string.IsNullOrEmpty(RootDirectory))
-                    {
-                        try
-                        {
-                            KartRhoFile.Dump(RootDirectory + "Data\\aaa.pk");
-                            KartRhoFile.packFolderManager.Reset();
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"读取Data文件时出错: {ex.Message}");
-                        }
-                        string Load_Console = AppDomain.CurrentDomain.BaseDirectory + "Profile\\Console.ini";
-                        IntPtr consoleHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
-                        if (!File.Exists(Load_Console))
-                        {
-                            using (StreamWriter streamWriter = new StreamWriter(Load_Console, false))
-                            {
-                                streamWriter.Write("0");
-                            }
-                        }
-                        string textValue = System.IO.File.ReadAllText(Load_Console);
-                        if (textValue == "0")
-                        {
-                            ShowWindow(consoleHandle, SW_HIDE);
-                        }
-                        Application.EnableVisualStyles();
-                        Application.SetCompatibleTextRenderingDefault(false);
-                        Launcher StartLauncher = new Launcher();
-                        Program.LauncherDlg = StartLauncher;
-                        Program.LauncherDlg.kartRiderDirectory = RootDirectory;
-                        Application.Run(StartLauncher);
-                    }
-                    input = "";
-                    output = "";
-                }
-                else if (args.Length == 1)
-                {
-                    input = args[0];
-                    output = args[0];
-                }
-                else
-                {
-                    if (args.Length != 2)
-                        return;
-                    input = args[0];
-                    output = args[1];
-                }
-                if (input.EndsWith(".rho") || input.EndsWith(".rho5"))
-                {
-                    Program.decode(input, output);
-                }
-                else if (input.EndsWith("aaa.xml"))
-                {
-                    Program.AAAD(input);
-                }
-                else if (input.EndsWith(".xml"))
-                {
-                    Program.XtoB(input);
-                }
-                else if (input.EndsWith(".bml"))
-                {
-                    Program.BtoX(input);
-                }
-                else if (input.EndsWith(".pk"))
-                {
-                    Program.AAAR(input);
-                }
-                else
-                {
-                    if (!Directory.Exists(input))
-                        return;
-                    if (input.Contains("_0"))
-                    {
-                        Program.encode(input, output);
-                    }
-                    else
-                    {
-                        string[] files = Directory.GetFiles(input, "*.rho");
+                        string[] files = Directory.GetFiles(arg, "*.rho");
                         if (files.Length > 0)
                         {
-                            Program.AAAC(input, files);
+                            Program.AAAC(arg, files);
                         }
                         else
                         {
-                            Program.encodea(input, output);
+                            Program.encodea(arg, arg);
+                            var parent = Path.GetDirectoryName(arg);
+                            files = Directory.GetFiles(parent, "*.rho");
+                            Program.AAAC(parent, files);
                         }
                     }
                 }
             }
+
         }
 
         private static void encodea(string input, string output)
         {
-            RhoArchive rhoArchive = new RhoArchive();
             if (!output.EndsWith(".rho"))
                 output += ".rho";
 
@@ -191,11 +99,10 @@ namespace KartRider
         private static void SaveFolder(string intput, string output)
         {
             RhoArchive rhoArchive = new RhoArchive();
-            string lastFolderName = Path.GetFileName(intput);
-            string array = lastFolderName.Replace('_', '\\'); ;
-            GetAllFiles(intput + "\\" + array, new List<string>(), rhoArchive.RootFolder);
+            GetAllFiles(intput, new List<string>(), rhoArchive.RootFolder);
 
             rhoArchive.SaveTo(output);
+            rhoArchive.Close();
         }
 
         private static void GetAllFiles(string folderPath, List<string> fileList, RhoFolder folder)
@@ -268,8 +175,8 @@ namespace KartRider
         private static void decode(string input, string output)
         {
             if (output.EndsWith(".rho"))
-                output = output.Replace(".rho", "");
-            if (output.EndsWith(".rho5"))
+                output = Path.GetDirectoryName(output);
+            else if (output.EndsWith(".rho5"))
                 output = output.Replace(".rho5", "");
             PackFolderManager packFolderManager = new PackFolderManager();
             packFolderManager.OpenSingleFile(input, CC);
@@ -282,7 +189,7 @@ namespace KartRider
                 foreach (PackFolderInfo packFolderInfo in packFolderInfos.GetFoldersInfo())
                 {
                     string fileName = Path.GetFileNameWithoutExtension(packFolderInfo.FolderName);
-                    RhoFolders(output, output + "/" + fileName, packFolderInfo);
+                    RhoFolders(output, output, packFolderInfo);
                 }
             }
         }
@@ -293,7 +200,7 @@ namespace KartRider
             {
                 foreach (var item in rhoFolders.GetFilesInfo())
                 {
-                    string fullName = input + "/" + ReplacePath(item.FullName);
+                    string fullName = input + "/" + item.FullName.Replace(".rho", "");
                     string Name = Path.GetDirectoryName(fullName);
                     if (!Directory.Exists(Name))
                         Directory.CreateDirectory(Name);
@@ -309,8 +216,6 @@ namespace KartRider
                 foreach (var rhoFolder in rhoFolders.Folders)
                 {
                     string Folder = output + "/" + rhoFolder.FolderName;
-                    if (!Directory.Exists(Folder))
-                        Directory.CreateDirectory(Folder);
                     RhoFolders(input, Folder, rhoFolder);
                 }
             }
@@ -458,38 +363,9 @@ namespace KartRider
 
         private static void AAAC(string input, string[] files)
         {
-            string[] whitelist = { "_I04_sn", "_I05_sn", "_R01_sn", "_R02_sn", "_I02_sn", "_I01_sn", "_I03_sn", "_L01_", "_L02_", "_L03_03_", "_L03_", "_L04_", "bazzi_", "arthur_", "bero_", "brodi_", "camilla_", "chris_", "contender_", "crowdr_", "CSO_", "dao_", "dizni_", "erini_", "ethi_", "Guazi_", "halloween_", "homrunDao_", "innerWearSonogong_", "innerWearWonwon_", "Jianbing_", "kephi_", "kero_", "kwanwoo_", "Lingling_", "lodumani_", "mabi_", "Mahua_", "marid_", "mobi_", "mos_", "narin_", "neoul_", "neo_", "nymph_", "olympos_", "panda_", "referee_", "ren_", "Reto_", "run_", "zombie_", "santa_", "sophi_", "taki_", "tiera_", "tutu_", "twoTop_", "twotop_", "uni_", "wonwon_", "zhindaru_", "zombie_", "flyingBook_", "flyingMechanic_", "flyingRedlight_", "crow_", "dragonBoat_", "GiLin_", "maple_", "beach_", "village_", "china_", "factory_", "ice_", "mine_", "nemo_", "world_", "forest_", "_I", "_R", "_S", "_F", "_P", "_K", "_D", "_jp" };
+            string[] whitelist = { "_I04_sn", "_I05_sn", "_R01_sn", "_R02_sn", "_I02_sn", "_I01_sn", "_I03_sn", "_L01_", "_L02_", "_L03_03_", "_L03_", "_L04_", "bazzi_", "arthur_", "bero_", "brodi_", "camilla_", "chris_", "contender_", "crowdr_", "CSO_", "dao_", "dizni_", "erini_", "ethi_", "Guazi_", "halloween_", "homrunDao_", "innerWearSonogong_", "innerWearWonwon_", "Jianbing_", "kephi_", "kero_", "kwanwoo_", "Lingling_", "lodumani_", "mabi_", "Mahua_", "marid_", "mobi_", "mos_", "narin_", "neoul_", "neo_", "nymph_", "olympos_", "panda_", "referee_", "ren_", "Reto_", "run_", "zombie_", "santa_", "sophi_", "taki_", "tiera_", "tutu_", "twoTop_", "twotop_", "uni_", "wonwon_", "zhindaru_", "zombie_", "flyingBook_", "flyingMechanic_", "flyingRedlight_", "crow_", "dragonBoat_", "GiLin_", "maple_", "beach_", "village_", "china_", "factory_", "ice_", "mine_", "nemo_", "world_", "forest_", "_I", "_R", "_S", "_F", "_P", "_K", "_D", "_jp", "_A0" };
             string[] blacklist = { "character_" };
-            string Whitelist = AppDomain.CurrentDomain.BaseDirectory + "Profile\\Whitelist.ini";
-            string Blacklist = AppDomain.CurrentDomain.BaseDirectory + "Profile\\Blacklist.ini";
-            if (File.Exists(Whitelist))
-            {
-                whitelist = File.ReadAllLines(Whitelist);
-            }
-            else
-            {
-                using (StreamWriter writer = new StreamWriter(Whitelist))
-                {
-                    foreach (string white in whitelist)
-                    {
-                        writer.WriteLine(white);
-                    }
-                }
-            }
-            if (File.Exists(Blacklist))
-            {
-                blacklist = File.ReadAllLines(Blacklist);
-            }
-            else
-            {
-                using (StreamWriter blackr = new StreamWriter(Blacklist))
-                {
-                    foreach (string black in blacklist)
-                    {
-                        blackr.WriteLine(black);
-                    }
-                }
-            }
+
             XElement root = new XElement("PackFolder", new XAttribute("name", "KartRider"));
             foreach (string file in files)
             {

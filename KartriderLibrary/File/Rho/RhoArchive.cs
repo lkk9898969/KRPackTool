@@ -1,17 +1,8 @@
 ﻿using KartLibrary.Encrypt;
 using KartLibrary.IO;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Pipes;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Numerics;
-using System.Reflection.Metadata;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography.Xml;
 using System.Text;
 
 namespace KartLibrary.File
@@ -273,7 +264,7 @@ namespace KartLibrary.File
             dataEndOffset += dataBeginOffset;
 
             // Write Identifier Text
-            BinaryWriter outWriter = new BinaryWriter(outFileStream);
+            using BinaryWriter outWriter = new BinaryWriter(outFileStream);
             outWriter.Write(Encoding.Unicode.GetBytes(_rhLayerIdentifiers[_layerVersion]));
             outFileStream.Seek(0x40, SeekOrigin.Begin);
             outWriter.Write(Encoding.Unicode.GetBytes(_rhLayerSecondText));
@@ -386,8 +377,8 @@ namespace KartLibrary.File
 
         public void Close()
         {
-            if (_closed)
-                throw new Exception("This archive is close or is not open from a file.");
+            //if (_closed)
+            //    throw new Exception("This archive is close or is not open from a file.");
             if (_rhoStream is not null && _rhoStream.CanRead)
                 _rhoStream.Close();
             _rhoStream?.Dispose();
