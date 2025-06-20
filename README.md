@@ -1,4 +1,7 @@
-# Launcher_V2
-![image](https://raw.githubusercontent.com/yanygm/Launcher_V2/refs/heads/main/Properties/favicon.ico)
+# KRPackTool
+![image](https://raw.githubusercontent.com/yanygm/Launcher_V2/refs/heads/main/Properties/favicon.ico)  
 
-[TheMagicFlute文档](https://themagicflute.github.io/Launcher_V2/)
+Original Launcher : https://github.com/yanygm/Launcher_V2  
+Rewrite by : lkk9898969
+
+![image](https://raw.githubusercontent.com/lkk9898969/KRPackTool/refs/heads/main/lkk_Icon.ico)
