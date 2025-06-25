@@ -46,6 +46,9 @@
     <None Remove="win-x64\**" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove=".gitignore" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="lkk_Icon.ico" />
   </ItemGroup>
   <ItemGroup>

@@ -18,13 +18,13 @@ namespace KRPackTool
     {
         public static CountryCode CC = CountryCode.TW;
         static readonly string[] datapack = { "boss", "character", "dialog", "dialog2", "effect", "etc_", "flyingPet", "gui", "item", "kart_", "myRoom", "pet", "sound", "stage", "stuff", "stuff2", "theme", "track", "trackThumb", "track_", "zeta", "zeta_" };
-
+        const string CountryCodeFile = "CountryCode.ini";
         [STAThread]
         private static async Task Main(string[] args)
         {
             Console.OutputEncoding = Encoding.UTF8;
             Console.InputEncoding = Encoding.UTF8;
-            string Load_CC = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CountryCode.ini");
+            string Load_CC = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, CountryCodeFile);
             if (File.Exists(Load_CC))
             {
                 string textValue = System.IO.File.ReadAllText(Load_CC);
@@ -39,6 +39,7 @@ namespace KRPackTool
             }
             foreach (var arg in args)
             {
+                CC = parseCountryCode(Path.GetDirectoryName(arg));
                 if (arg.EndsWith(".rho") || arg.EndsWith(".rho5"))
                 {
                     Program.decode(arg, arg);
@@ -86,6 +87,26 @@ namespace KRPackTool
                 }
             }
 
+        }
+
+        static CountryCode parseCountryCode(string dir)
+        {
+            var Load_CC = Path.Combine(dir, CountryCodeFile);
+            CountryCode cc = CC;
+            if (File.Exists(Load_CC))
+            {
+                string textValue = System.IO.File.ReadAllText(Load_CC);
+                var success = Enum.TryParse<CountryCode>(textValue, true, out cc);
+                if (success)
+                    return cc;
+            }
+            Load_CC = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, CountryCodeFile);
+            if (File.Exists(Load_CC))
+            {
+                string textValue = System.IO.File.ReadAllText(Load_CC);
+                cc = (CountryCode)Enum.Parse(typeof(CountryCode), textValue);
+            }
+            return cc;
         }
 
         private static void encodea(string input, string output)
@@ -228,6 +249,8 @@ namespace KRPackTool
 
         private static void BtoX(string input)
         {
+            if (!File.Exists(input))
+                return;
             byte[] data = File.ReadAllBytes(input);
             BinaryXmlDocument bxd = new BinaryXmlDocument();
             bxd.Read(Encoding.GetEncoding("UTF-16"), data);
@@ -296,6 +319,8 @@ namespace KRPackTool
 
         private static void AAAR(string input)
         {
+            if (!File.Exists(input))
+                return;
             using FileStream fileStream = new FileStream(input, FileMode.Open, FileAccess.Read);
             BinaryReader binaryReader = new BinaryReader(fileStream);
             int totalLength = binaryReader.ReadInt32();
