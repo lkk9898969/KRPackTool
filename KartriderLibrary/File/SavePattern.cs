@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace KartLibrary.File;
 
-namespace KartLibrary.File
+public enum SavePattern
 {
-    public enum SavePattern
-    {
-        Auto,
-        AlwaysRegeneration,
-        GenerateIfModified
-    }
+    Auto,
+    AlwaysRegeneration,
+    GenerateIfModified
 }

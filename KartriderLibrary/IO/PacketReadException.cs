@@ -1,11 +1,10 @@
 using System;
 
-namespace KartRider.IO.Packet
+namespace KartRider.IO.Packet;
+
+public sealed class PacketReadException : Exception
 {
-	public sealed class PacketReadException : Exception
-	{
-		public PacketReadException(string message) : base(message)
-		{
-		}
-	}
+    public PacketReadException(string message) : base(message)
+    {
+    }
 }

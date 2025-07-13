@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace KartLibrary.File
 {
-    public class FileDataSource : IDataSource
+    public class FileDataSource
     {
         private string _fileName;
         private int _size;

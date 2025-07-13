@@ -1,31 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace KartLibrary.File
+namespace KartLibrary.File;
+
+public interface IDataSource : IDisposable
 {
-    public interface IDataSource : IDisposable
-    {
-        bool Locked { get; }
 
-        int Size { get; }
+    int Size { get; }
 
-        Stream CreateStream();
+    Stream CreateStream();
 
-        void WriteTo(Stream stream);
+    void WriteTo(Stream stream);
 
-        Task WriteToAsync(Stream stream, CancellationToken cancellationToken = default);
+    Task WriteToAsync(Stream stream, CancellationToken cancellationToken = default);
 
-        void WriteTo(byte[] array, int offset, int count);
+    byte[] GetBytes();
 
-        Task WriteToAsync(byte[] array, int offset, int count, CancellationToken cancellationToken = default);
-
-        byte[] GetBytes();
-
-        Task<byte[]> GetBytesAsync(CancellationToken cancellationToken = default);
-    }
+    Task<byte[]> GetBytesAsync(CancellationToken cancellationToken = default);
 }

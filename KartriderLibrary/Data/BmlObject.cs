@@ -3,184 +3,158 @@ using System.Collections.Generic;
 using System.IO;
 using KartRider.IO.Packet;
 
-namespace KartRider.Common.Data
+namespace KartRider.Common.Data;
+
+public class BmlObject
 {
-    public class BmlObject
+    public BmlObject()
     {
-        public string Name { get; set; }
+        Name = string.Empty;
+        Value = string.Empty;
+        Values = new Dictionary<string, string>();
+        SubObjects = new List<Tuple<string, BmlObject>>();
+    }
 
-        public string Value { get; set; }
+    public BmlObject(BmlObject copyObject)
+        : this()
+    {
+        Name = copyObject.Name;
+        Value = copyObject.Value;
+        Values = new Dictionary<string, string>(copyObject.Values);
+        foreach (var subObject in copyObject.SubObjects)
+            SubObjects.Add(new Tuple<string, BmlObject>(subObject.Item1, new BmlObject(subObject.Item2)));
+    }
 
-        public Dictionary<string, string> Values { get; private set; }
-
-        public List<Tuple<string, BmlObject>> SubObjects { get; private set; }
-
-        public BmlObject()
+    public BmlObject(InPacket p)
+        : this()
+    {
+        Name = p.ReadString();
+        Value = p.ReadString();
+        var num = p.ReadInt();
+        for (var i = 0; i < num; i++)
         {
-            Name = string.Empty;
-            Value = string.Empty;
-            Values = new Dictionary<string, string>();
-            SubObjects = new List<Tuple<string, BmlObject>>();
+            var key = p.ReadString();
+            var value = p.ReadString();
+            Values.Add(key, value);
         }
 
-        public BmlObject(BmlObject copyObject)
-            : this()
+        var num2 = p.ReadInt();
+        for (var j = 0; j < num2; j++)
         {
-            Name = copyObject.Name;
-            Value = copyObject.Value;
-            Values = new Dictionary<string, string>(copyObject.Values);
-            foreach (Tuple<string, BmlObject> subObject in copyObject.SubObjects)
-            {
-                SubObjects.Add(new Tuple<string, BmlObject>(subObject.Item1, new BmlObject(subObject.Item2)));
-            }
+            var bmlObject = new BmlObject(p);
+            SubObjects.Add(new Tuple<string, BmlObject>(bmlObject.Name, bmlObject));
+        }
+    }
+
+    public string Name { get; set; }
+
+    public string Value { get; set; }
+
+    public Dictionary<string, string> Values { get; }
+
+    public List<Tuple<string, BmlObject>> SubObjects { get; }
+
+    public BmlObject Copy()
+    {
+        return new BmlObject(this);
+    }
+
+    public static BmlObject Create(string path)
+    {
+        if (!File.Exists(path)) throw new Exception("Unable to locate object file.");
+
+        var packet = File.ReadAllBytes(path);
+        var p = new InPacket(packet);
+        return new BmlObject(p);
+    }
+
+    public void Save(OutPacket p)
+    {
+        p.WriteString(Name);
+        p.WriteString(Value);
+        p.WriteInt(Values.Count);
+        foreach (var value in Values)
+        {
+            p.WriteString(value.Key);
+            p.WriteString(value.Value);
         }
 
-        public BmlObject Copy()
-        {
-            return new BmlObject(this);
-        }
+        p.WriteInt(SubObjects.Count);
+        foreach (var subObject in SubObjects) subObject.Item2.Save(p);
+    }
 
-        public BmlObject(InPacket p)
-            : this()
-        {
-            Name = p.ReadString();
-            Value = p.ReadString();
-            int num = p.ReadInt();
-            for (int i = 0; i < num; i++)
-            {
-                string key = p.ReadString();
-                string value = p.ReadString();
-                Values.Add(key, value);
-            }
+    public BmlObject GetObject(string name)
+    {
+        foreach (var subObject in SubObjects)
+            if (subObject.Item1 == name)
+                return subObject.Item2;
 
-            int num2 = p.ReadInt();
-            for (int j = 0; j < num2; j++)
-            {
-                BmlObject bmlObject = new BmlObject(p);
-                SubObjects.Add(new Tuple<string, BmlObject>(bmlObject.Name, bmlObject));
-            }
-        }
+        return null;
+    }
 
-        public static BmlObject Create(string path)
-        {
-            if (!File.Exists(path))
-            {
-                throw new Exception("Unable to locate object file.");
-            }
+    public string GetString(string key, string def = "")
+    {
+        if (Values.ContainsKey(key)) return Values[key];
 
-            byte[] packet = File.ReadAllBytes(path);
-            InPacket p = new InPacket(packet);
-            return new BmlObject(p);
-        }
+        return def;
+    }
 
-        public void Save(OutPacket p)
-        {
-            p.WriteString(Name);
-            p.WriteString(Value);
-            p.WriteInt(Values.Count);
-            foreach (KeyValuePair<string, string> value in Values)
-            {
-                p.WriteString(value.Key);
-                p.WriteString(value.Value);
-            }
+    public bool GetBool(string key, bool def = false)
+    {
+        var text = GetString(key, def.ToString()).ToLower();
+        if (text == "1" || text == "true") return true;
 
-            p.WriteInt(SubObjects.Count);
-            foreach (Tuple<string, BmlObject> subObject in SubObjects)
-            {
-                subObject.Item2.Save(p);
-            }
-        }
+        if (text == "0" || text == "false") return false;
 
-        public BmlObject GetObject(string name)
-        {
-            foreach (Tuple<string, BmlObject> subObject in SubObjects)
-            {
-                if (subObject.Item1 == name)
-                {
-                    return subObject.Item2;
-                }
-            }
+        return def;
+    }
 
-            return null;
-        }
+    public byte GetByte(string key, byte def = 0)
+    {
+        var @string = GetString(key, def.ToString());
+        return byte.Parse(@string);
+    }
 
-        public string GetString(string key, string def = "")
-        {
-            if (Values.ContainsKey(key))
-            {
-                return Values[key];
-            }
+    public short GetShort(string key, int def = 0)
+    {
+        var @string = GetString(key, def.ToString());
+        return short.Parse(@string);
+    }
 
-            return def;
-        }
+    public ushort GetUShort(string key, int def = 0)
+    {
+        var @string = GetString(key, def.ToString());
+        return ushort.Parse(@string);
+    }
 
-        public bool GetBool(string key, bool def = false)
-        {
-            string text = GetString(key, def.ToString()).ToLower();
-            if (text == "1" || text == "true")
-            {
-                return true;
-            }
+    public int GetInt(string key, int def = 0)
+    {
+        var @string = GetString(key, def.ToString());
+        return int.Parse(@string);
+    }
 
-            if (text == "0" || text == "false")
-            {
-                return false;
-            }
+    public uint GetUInt(string key, int def = 0)
+    {
+        var @string = GetString(key, def.ToString());
+        return uint.Parse(@string);
+    }
 
-            return def;
-        }
+    public float GetFloat(string key, float def = 0f)
+    {
+        var @string = GetString(key, def.ToString());
+        return float.Parse(@string);
+    }
 
-        public byte GetByte(string key, byte def = 0)
-        {
-            string @string = GetString(key, def.ToString());
-            return byte.Parse(@string);
-        }
+    public void SetKeyValuePair(string key, string value)
+    {
+        if (Values.ContainsKey(key))
+            Values[key] = value;
+        else
+            Values.Add(key, value);
+    }
 
-        public short GetShort(string key, int def = 0)
-        {
-            string @string = GetString(key, def.ToString());
-            return short.Parse(@string);
-        }
-
-        public ushort GetUShort(string key, int def = 0)
-        {
-            string @string = GetString(key, def.ToString());
-            return ushort.Parse(@string);
-        }
-
-        public int GetInt(string key, int def = 0)
-        {
-            string @string = GetString(key, def.ToString());
-            return int.Parse(@string);
-        }
-
-        public uint GetUInt(string key, int def = 0)
-        {
-            string @string = GetString(key, def.ToString());
-            return uint.Parse(@string);
-        }
-
-        public float GetFloat(string key, float def = 0f)
-        {
-            string @string = GetString(key, def.ToString());
-            return float.Parse(@string);
-        }
-
-        public void SetKeyValuePair(string key, string value)
-        {
-            if (Values.ContainsKey(key))
-            {
-                Values[key] = value;
-            }
-            else
-            {
-                Values.Add(key, value);
-            }
-        }
-
-        public void SetBool(string key, bool value)
-        {
-            SetKeyValuePair(key, value ? "1" : "0");
-        }
+    public void SetBool(string key, bool value)
+    {
+        SetKeyValuePair(key, value ? "1" : "0");
     }
 }

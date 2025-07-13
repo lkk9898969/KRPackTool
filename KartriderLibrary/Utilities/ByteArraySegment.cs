@@ -1,72 +1,33 @@
-using System;
+namespace KartRider.Common.Utilities;
 
-namespace KartRider.Common.Utilities
+public sealed class ByteArraySegment
 {
-	public sealed class ByteArraySegment
-	{
-		private byte[] mBuffer = null;
+    public ByteArraySegment(byte[] pBuffer, bool pEncrypted)
+    {
+        Buffer = pBuffer;
+        Length = Buffer.Length;
+        Encrypted = pEncrypted;
+    }
 
-		private int mStart = 0;
+    public ByteArraySegment(byte[] pBuffer, int pStart, int pLength)
+    {
+        Buffer = pBuffer;
+        Start = pStart;
+        Length = pLength;
+    }
 
-		private int mLength = 0;
+    public byte[] Buffer { get; set; }
 
-		private bool mEncrypted = true;
+    public bool Encrypted { get; } = true;
 
-		public byte[] Buffer
-		{
-			get
-			{
-				return this.mBuffer;
-			}
-			set
-			{
-				this.mBuffer = value;
-			}
-		}
+    public int Length { get; private set; }
 
-		public bool Encrypted
-		{
-			get
-			{
-				return this.mEncrypted;
-			}
-		}
+    public int Start { get; private set; }
 
-		public int Length
-		{
-			get
-			{
-				return this.mLength;
-			}
-		}
-
-		public int Start
-		{
-			get
-			{
-				return this.mStart;
-			}
-		}
-
-		public ByteArraySegment(byte[] pBuffer, bool pEncrypted)
-		{
-			this.mBuffer = pBuffer;
-			this.mLength = (int)this.mBuffer.Length;
-			this.mEncrypted = pEncrypted;
-		}
-
-		public ByteArraySegment(byte[] pBuffer, int pStart, int pLength)
-		{
-			this.mBuffer = pBuffer;
-			this.mStart = pStart;
-			this.mLength = pLength;
-		}
-
-		public bool Advance(int pLength)
-		{
-			this.mStart += pLength;
-			this.mLength -= pLength;
-			return (this.mLength > 0 ? false : true);
-		}
-	}
+    public bool Advance(int pLength)
+    {
+        Start += pLength;
+        Length -= pLength;
+        return Length > 0 ? false : true;
+    }
 }

@@ -1,37 +1,32 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace KartLibrary.File
+namespace KartLibrary.File;
+
+public interface IRhoFile : IDisposable
 {
-    public interface IRhoFile : IDisposable
-    {
-        IRhoFolder? Parent { get; }
 
-        string Name { get; }
+    string Name { get; }
 
-        string FullName { get; }
+    string FullName { get; }
 
-        int Size { get; }
+    int Size { get; }
 
-        bool HasDataSource { get; }
+    bool HasDataSource { get; }
 
-        Stream CreateStream();
+    Stream CreateStream();
 
-        void WriteTo(Stream stream);
+    void WriteTo(Stream stream);
 
-        Task WriteToAsync(Stream stream, CancellationToken cancellationToken = default);
+    Task WriteToAsync(Stream stream, CancellationToken cancellationToken = default);
 
-        void WriteTo(byte[] array, int offset, int count);
+    void WriteTo(byte[] array, int offset, int count);
 
-        Task WriteToAsync(byte[] array, int offset, int count, CancellationToken cancellationToken = default);
+    Task WriteToAsync(byte[] array, int offset, int count, CancellationToken cancellationToken = default);
 
-        byte[] GetBytes();
+    byte[] GetBytes();
 
-        Task<byte[]> GetBytesAsync(CancellationToken cancellationToken = default);
-    }
+    Task<byte[]> GetBytesAsync(CancellationToken cancellationToken = default);
 }

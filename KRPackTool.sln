@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35919.96 d17.13
+VisualStudioVersion = 17.13.35919.96
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KRPackTool", "KRPackTool.csproj", "{ACF31987-348B-C3D7-025D-A9E4AC26D40F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject", "TestProject\TestProject.csproj", "{6E3959E3-14C9-4767-A135-5E9FC85957A0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,14 @@ Global
 		{ACF31987-348B-C3D7-025D-A9E4AC26D40F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{ACF31987-348B-C3D7-025D-A9E4AC26D40F}.Release|x64.ActiveCfg = Release|x64
 		{ACF31987-348B-C3D7-025D-A9E4AC26D40F}.Release|x64.Build.0 = Release|x64
+		{6E3959E3-14C9-4767-A135-5E9FC85957A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E3959E3-14C9-4767-A135-5E9FC85957A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E3959E3-14C9-4767-A135-5E9FC85957A0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6E3959E3-14C9-4767-A135-5E9FC85957A0}.Debug|x64.Build.0 = Debug|Any CPU
+		{6E3959E3-14C9-4767-A135-5E9FC85957A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E3959E3-14C9-4767-A135-5E9FC85957A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E3959E3-14C9-4767-A135-5E9FC85957A0}.Release|x64.ActiveCfg = Release|Any CPU
+		{6E3959E3-14C9-4767-A135-5E9FC85957A0}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

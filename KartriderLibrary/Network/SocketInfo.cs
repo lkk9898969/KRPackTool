@@ -1,42 +1,40 @@
-using System;
 using System.Net.Sockets;
 
-namespace KartRider.Common.Network
+namespace KartRider.Common.Network;
+
+public class SocketInfo
 {
-	public class SocketInfo
-	{
-		public readonly System.Net.Sockets.Socket Socket;
+    public enum StateEnum
+    {
+        Header,
+        Content
+    }
 
-		public bool NoEncryption;
+    public readonly Socket Socket;
 
-		public SocketInfo.StateEnum State;
+    public byte[] DataBuffer;
 
-		public byte[] DataBuffer;
+    public int Index;
 
-		public int Index;
+    public bool NoEncryption;
 
-		public SocketInfo(System.Net.Sockets.Socket socket, short headerLength) : this(socket, headerLength, false)
-		{
-		}
+    public StateEnum State;
 
-		public SocketInfo(System.Net.Sockets.Socket socket, short headerLength, bool noEncryption)
-		{
-			this.Socket = socket;
-			this.State = SocketInfo.StateEnum.Header;
-			this.NoEncryption = noEncryption;
-			this.DataBuffer = new byte[headerLength];
-			this.Index = 0;
-		}
+    public SocketInfo(Socket socket, short headerLength) : this(socket, headerLength, false)
+    {
+    }
 
-		SocketInfo()
-		{
-			this.DataBuffer = null;
-		}
+    public SocketInfo(Socket socket, short headerLength, bool noEncryption)
+    {
+        Socket = socket;
+        State = StateEnum.Header;
+        NoEncryption = noEncryption;
+        DataBuffer = new byte[headerLength];
+        Index = 0;
+    }
 
-		public enum StateEnum
-		{
-			Header,
-			Content
-		}
-	}
+    private SocketInfo()
+    {
+        DataBuffer = null;
+    }
 }
