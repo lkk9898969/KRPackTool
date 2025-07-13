@@ -9,7 +9,7 @@ public class Rho5File
 
     public Rho5File()
     {
-        _name = "";
+        FullName = "";
         NameWithoutExt = "";
         _fullname = "";
         DataSource = null;
@@ -17,53 +17,6 @@ public class Rho5File
         _originalSource = null;
         _originalName = "";
     }
-
-    #endregion
-
-    #region Members
-
-    internal int _dataPackID;
-
-    private string _name;
-    private string _fullname;
-
-    private string _originalName;
-    private IDataSource? _originalSource;
-
-    private bool _disposed;
-
-    #endregion
-
-    #region Properties
-
-
-
-
-    public string Name
-    {
-        get => _name;
-        set
-        {
-            _name = value;
-            var fileNamePattern = new Regex(@"^(.*)\..*");
-            var match = fileNamePattern.Match(_name);
-            if (match.Success)
-                NameWithoutExt = match.Groups[1].Value;
-            else
-                NameWithoutExt = _name;
-        }
-    }
-
-    public string FullName => _name;
-
-    public string NameWithoutExt { get; private set; }
-
-    public int Size => DataSource?.Size ?? 0;
-
-    public IDataSource? DataSource { get; set; }
-
-    public bool HasDataSource => DataSource is not null;
-
 
     #endregion
 
@@ -75,6 +28,48 @@ public class Rho5File
             throw new InvalidOperationException("There are no any data source.");
         return DataSource.GetBytes();
     }
+
+    #endregion
+
+    #region Members
+
+    internal int _dataPackID;
+
+    private string _fullname;
+
+    private string _originalName;
+    private IDataSource _originalSource;
+
+    private bool _disposed;
+
+    #endregion
+
+    #region Properties
+
+    public string Name
+    {
+        get => FullName;
+        set
+        {
+            FullName = value;
+            var fileNamePattern = new Regex(@"^(.*)\..*");
+            var match = fileNamePattern.Match(FullName);
+            if (match.Success)
+                NameWithoutExt = match.Groups[1].Value;
+            else
+                NameWithoutExt = FullName;
+        }
+    }
+
+    public string FullName { get; private set; }
+
+    public string NameWithoutExt { get; private set; }
+
+    public int Size => DataSource?.Size ?? 0;
+
+    public IDataSource DataSource { get; set; }
+
+    public bool HasDataSource => DataSource is not null;
 
     #endregion
 }

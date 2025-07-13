@@ -1,22 +1,16 @@
-﻿using KartLibrary.Text;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Xml;
+using KartLibrary.Text;
 
 namespace KartLibrary.Xml;
 
 public class BinaryXmlTag : DynamicObject
 {
-    public dynamic? GetAttribute(string Attribute)
-    {
-        if (!Attributes.ContainsKey(Attribute))
-            return null;
-        return new BinaryXmlAttributeValue(Attributes[Attribute]);
-    }
 
     public void SetAttribute(string name, string value)
     {
@@ -79,7 +73,7 @@ public class BinaryXmlTag : DynamicObject
         }
     }
 
-    public override bool TryGetMember(GetMemberBinder binder, out object? result)
+    public override bool TryGetMember(GetMemberBinder binder, out object result)
     {
         var attributeName = binder.Name;
         if (!_attributes.ContainsKey(attributeName))
@@ -93,7 +87,7 @@ public class BinaryXmlTag : DynamicObject
         return true;
     }
 
-    public override bool TrySetMember(SetMemberBinder binder, object? value)
+    public override bool TrySetMember(SetMemberBinder binder, object value)
     {
         var attributeName = binder.Name;
         var attributeValue = value?.ToString() ?? "";

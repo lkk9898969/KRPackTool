@@ -152,28 +152,10 @@ public static class RhoKey
         return Adler.Adler32(0, stringData, 0, stringData.Length) - 0xa6ee7565;
     }
 
-    public static uint GetJmdKey(string FileName)
-    {
-        var stringData = Encoding.GetEncoding("UTF-16").GetBytes(FileName);
-        return Adler.Adler32(0, stringData, 0, stringData.Length) + 0x3de90dc3;
-    }
-
-    public static uint GetBlockFirstKey(uint RhoKey)
-    {
-        return RhoKey ^ 0x3A9213AC;
-    }
-
-
     public static uint GetDirectoryDataKey(uint RhoKey)
     {
         return RhoKey + 0x2593A9F1;
     }
-
-    public static uint GetJmdDirectoryDataKey(uint RhoKey)
-    {
-        return RhoKey - 0x41014EBF;
-    }
-
     public static uint GetDataKey(uint RhoKey, RhoFileInfo fileInfo)
     {
         var strData = Encoding.GetEncoding("UTF-16").GetBytes(fileInfo.Name);
@@ -191,16 +173,6 @@ public static class RhoKey
         key += RhoKey - 0x756DE654;
         return key;
     }
-
-    public static uint GetJmdDataKey(uint RhoKey, RhoFileInfo fileInfo)
-    {
-        var strData = Encoding.GetEncoding("UTF-16").GetBytes(fileInfo.Name);
-        var key = Adler.Adler32(0, strData, 0, strData.Length);
-        key += (uint)fileInfo.ExtNum;
-        key += RhoKey - 0x7E2AF33D;
-        return key;
-    }
-
     public static unsafe byte[] ExtendKey(uint originalKey)
     {
         var outArray = new byte[64];
@@ -225,20 +197,4 @@ public static class RhoKey
         return output;
     }
 
-    /*Rho5test func*/
-    public static byte[] getKey(string filename, string anotherData)
-    {
-        filename = filename.ToLower();
-        var newStr = $"{filename}{anotherData}";
-        var data = Encoding.GetEncoding("UTF-16").GetBytes(newStr);
-        var output = new byte[0x80];
-        var readsCount = data.Length >> 1;
-        for (var i = 0; i < 128; i++)
-        {
-            var index = i % readsCount;
-            output[i] = (byte)(data[index * 2] + i);
-        }
-
-        return output;
-    }
 }

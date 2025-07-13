@@ -5,7 +5,6 @@ namespace KartLibrary.File;
 
 public interface IRhoFolder : IDisposable
 {
-    IRhoFolder? Parent { get; }
 
     IReadOnlyCollection<IRhoFile> Files { get; }
 
@@ -14,14 +13,6 @@ public interface IRhoFolder : IDisposable
     string Name { get; }
 
     string FullName { get; }
-
-    IRhoFile? GetFile(string path);
-
-    IRhoFolder? GetFolder(string path);
-
-    bool ContainsFile(string path);
-
-    bool ContainsFolder(string path);
 }
 
 public interface IRhoFolder<TFolder, TFile> : IRhoFolder
@@ -30,8 +21,4 @@ public interface IRhoFolder<TFolder, TFile> : IRhoFolder
     new IReadOnlyCollection<TFile> Files { get; }
 
     new IReadOnlyCollection<TFolder> Folders { get; }
-
-    new TFile? GetFile(string path);
-
-    new TFolder? GetFolder(string path);
 }

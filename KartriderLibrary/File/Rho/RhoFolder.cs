@@ -72,11 +72,8 @@ public class RhoFolder : IRhoFolder<RhoFolder, RhoFile>, IModifiableRhoFolder<Rh
         }
     }
 
-    public RhoFolder? Parent { get; private set; }
+    public RhoFolder Parent { get; private set; }
 
-    IRhoFolder? IRhoFolder.Parent => Parent;
-
-    IModifiableRhoFolder? IModifiableRhoFolder.Parent => Parent;
 
     public IReadOnlyCollection<RhoFile> Files => _files.Values;
 
@@ -127,55 +124,6 @@ public class RhoFolder : IRhoFolder<RhoFolder, RhoFile>, IModifiableRhoFolder<Rh
 
     #region Methods
 
-    public RhoFile? GetFile(string path)
-    {
-        var splittedPath = path.Split('/');
-        var findFolders = this;
-        for (var i = 0; i < splittedPath.Length - 1; i++)
-        {
-            var folderName = splittedPath[i];
-            if (folderName == ".")
-                continue;
-            if (folderName == "..")
-                if (findFolders.Parent is null)
-                    return null;
-                else
-                    findFolders = findFolders.Parent;
-            else if (!findFolders._folders.ContainsKey(folderName))
-                return null;
-            else
-                findFolders = findFolders._folders[folderName];
-        }
-
-        if (splittedPath.Length >= 1 && findFolders._files.ContainsKey(splittedPath[^1]))
-            return findFolders._files[splittedPath[^1]];
-
-        return null;
-    }
-
-    public RhoFolder? GetFolder(string path)
-    {
-        var splittedPath = path.Split('/');
-        var findFolder = this;
-        for (var i = 0; i < splittedPath.Length; i++)
-        {
-            var folderName = splittedPath[i];
-            if (folderName == ".")
-                continue;
-            if (folderName == "..")
-                if (findFolder.Parent is null)
-                    return null;
-                else
-                    findFolder = findFolder.Parent;
-            else if (!findFolder._folders.ContainsKey(folderName))
-                return null;
-            else
-                findFolder = findFolder._folders[folderName];
-        }
-
-        return findFolder;
-    }
-
     public void AddFile(RhoFile file)
     {
         if (_files.ContainsKey(file.Name))
@@ -190,39 +138,6 @@ public class RhoFolder : IRhoFolder<RhoFolder, RhoFile>, IModifiableRhoFolder<Rh
         file._parentFolder = this;
     }
 
-    public void AddFile(string path, RhoFile file)
-    {
-        var splittedPath = path.Split('/');
-        var findFolders = this;
-        var folderNameList = new List<string>();
-        for (var i = 0; i < splittedPath.Length; i++)
-        {
-            var folderName = splittedPath[i];
-            folderNameList.Add(folderName);
-            if (!findFolders._folders.ContainsKey(folderName))
-                throw new Exception($"Folder: {string.Join('/', folderNameList.ToArray())} can not be found.");
-            findFolders = findFolders._folders[folderName];
-        }
-
-        if (splittedPath.Length > 1)
-        {
-            var fileName = file.Name;
-            if (!findFolders._files.ContainsKey(fileName))
-            {
-                if (file.Parent is not null) throw new Exception("The parent of adding file is in other folder.");
-
-                findFolders.AddFile(file);
-            }
-            else
-            {
-                throw new Exception($"File: {path}/{fileName} is exist.");
-            }
-        }
-        else
-        {
-            throw new Exception($"Path: {path} is invalid.");
-        }
-    }
 
     public void AddFolder(RhoFolder folder)
     {
@@ -238,144 +153,6 @@ public class RhoFolder : IRhoFolder<RhoFolder, RhoFile>, IModifiableRhoFolder<Rh
         folder.Parent = this;
         folder._prevCounterInitialized = false;
         folder.Name = folder._name;
-    }
-
-    public void AddFolder(string path, RhoFolder folder)
-    {
-        var splittedPath = path.Split('/');
-        var findFolders = this;
-        var folderNameList = new List<string>();
-        for (var i = 0; i < splittedPath.Length; i++)
-        {
-            var folderName = splittedPath[i];
-            folderNameList.Add(folderName);
-            if (!findFolders._folders.ContainsKey(folderName))
-                throw new Exception($"Folder: {string.Join('/', folderNameList.ToArray())} can not be found.");
-            findFolders = findFolders._folders[folderName];
-        }
-
-        if (splittedPath.Length > 1)
-        {
-            var folderName = folder.Name;
-            if (!findFolders._folders.ContainsKey(folderName))
-                findFolders.AddFolder(folder);
-            else
-                throw new Exception($"Folder: {path}/{folderName} is exist.");
-        }
-        else
-        {
-            throw new Exception($"Path: {path} is invalid.");
-        }
-    }
-
-    public bool ContainsFolder(string path)
-    {
-        var splittedPath = path.Split('/');
-        var findFolder = this;
-        for (var i = 0; i < splittedPath.Length; i++)
-        {
-            var folderName = splittedPath[i];
-            if (findFolder._folders.ContainsKey(folderName))
-                findFolder = findFolder._folders[folderName];
-            else
-                return false;
-        }
-
-        return splittedPath.Length > 0;
-    }
-
-    public bool ContainsFile(string path)
-    {
-        var splittedPath = path.Split('/');
-        var findFolder = this;
-        for (var i = 0; i < splittedPath.Length - 1; i++)
-        {
-            var folderName = splittedPath[i];
-            if (findFolder._folders.ContainsKey(folderName))
-                findFolder = findFolder._folders[folderName];
-            else
-                return false;
-        }
-
-        if (splittedPath.Length > 0)
-            return findFolder._files.ContainsKey(splittedPath[^1]);
-        return false;
-    }
-
-    public bool RemoveFile(string fileFullName)
-    {
-        var splittedPath = fileFullName.Split('/');
-        var findFolder = this;
-        for (var i = 0; i < splittedPath.Length - 1; i++)
-        {
-            var folderName = splittedPath[i];
-            if (findFolder._folders.ContainsKey(folderName))
-                findFolder = findFolder._folders[folderName];
-            else
-                return false;
-        }
-
-        if (splittedPath.Length > 0 && findFolder._files.ContainsKey(splittedPath[^1]))
-        {
-            findFolder.RemoveFile(findFolder._files[splittedPath[^1]]);
-            return true;
-        }
-
-        return false;
-    }
-
-    public bool RemoveFile(RhoFile fileToDelete)
-    {
-        if (_files.ContainsKey(fileToDelete.Name) && _files[fileToDelete.Name] == fileToDelete)
-        {
-            if (_addedFiles.Contains(fileToDelete))
-                _addedFiles.Remove(fileToDelete);
-            else
-                _removedFiles.Add(fileToDelete);
-            _files.Remove(fileToDelete.Name);
-            fileToDelete._parentFolder = null;
-            return true;
-        }
-
-        return false;
-    }
-
-    public bool RemoveFolder(string folderFullName)
-    {
-        var splittedPath = folderFullName.Split('/');
-        var findFolder = this;
-        for (var i = 0; i < splittedPath.Length - 1; i++)
-        {
-            var folderName = splittedPath[i];
-            if (findFolder._folders.ContainsKey(folderName))
-                findFolder = findFolder._folders[folderName];
-            else
-                return false;
-        }
-
-        if (splittedPath.Length > 0 && findFolder._folders.ContainsKey(splittedPath[^1]))
-        {
-            findFolder.RemoveFolder(findFolder._folders[splittedPath[^1]]);
-            return true;
-        }
-
-        return false;
-    }
-
-    public bool RemoveFolder(RhoFolder folderToDelete)
-    {
-        if (_folders.ContainsKey(folderToDelete.Name) && _folders[folderToDelete.Name] == folderToDelete)
-        {
-            if (_addedFolders.Contains(folderToDelete))
-                _addedFolders.Remove(folderToDelete);
-            else
-                _removedFolders.Add(folderToDelete);
-            _folders.Remove(folderToDelete.Name);
-            folderToDelete.Parent = null;
-            return true;
-        }
-
-        return false;
     }
 
     public void Clear()
@@ -427,57 +204,6 @@ public class RhoFolder : IRhoFolder<RhoFolder, RhoFile>, IModifiableRhoFolder<Rh
         return $"RhoFolder:{FullName}";
     }
 
-    IRhoFile? IRhoFolder.GetFile(string path)
-    {
-        return GetFile(path);
-    }
-
-    IRhoFolder? IRhoFolder.GetFolder(string path)
-    {
-        return GetFolder(path);
-    }
-
-    IModifiableRhoFile? IModifiableRhoFolder.GetFile(string path)
-    {
-        return GetFile(path);
-    }
-
-    IModifiableRhoFolder? IModifiableRhoFolder.GetFolder(string path)
-    {
-        return GetFolder(path);
-    }
-
-    void IModifiableRhoFolder.AddFile(IModifiableRhoFile file)
-    {
-        if (file is RhoFile rhoFile)
-            AddFile(rhoFile);
-        else
-            throw new Exception("");
-    }
-
-    void IModifiableRhoFolder.AddFile(string path, IModifiableRhoFile file)
-    {
-        if (file is RhoFile rhoFile)
-            AddFile(path, rhoFile);
-        else
-            throw new Exception("");
-    }
-
-    void IModifiableRhoFolder.AddFolder(IModifiableRhoFolder folder)
-    {
-        if (folder is RhoFolder rhoFolder)
-            AddFolder(rhoFolder);
-        else
-            throw new Exception("");
-    }
-
-    void IModifiableRhoFolder.AddFolder(string path, IModifiableRhoFolder folder)
-    {
-        if (folder is RhoFolder rhoFolder)
-            AddFolder(path, rhoFolder);
-        else
-            throw new Exception("");
-    }
 
     internal uint getFolderDataIndex()
     {

@@ -1,5 +1,5 @@
-﻿using KartLibrary.Encrypt;
-using System.Text;
+﻿using System.Text;
+using KartLibrary.Encrypt;
 
 namespace KartLibrary.File;
 
@@ -55,5 +55,4 @@ public class RhoFileInfo
         for (var i = 0; i < arr.Length; i++) output |= arr[i] << (i << 3);
         return output;
     }
-
 }

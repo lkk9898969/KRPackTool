@@ -15,7 +15,7 @@ public class RhoDataInfo : IComparable<RhoDataInfo>
     public RhoBlockProperty BlockProperty { get; set; }
     public uint Checksum { get; set; }
 
-    public int CompareTo(RhoDataInfo? other)
+    public int CompareTo(RhoDataInfo other)
     {
         return Index.CompareTo(other?.Index);
     }

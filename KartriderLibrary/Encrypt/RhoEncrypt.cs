@@ -70,19 +70,6 @@ public static class RhoEncrypt
         return output;
     }
 
-    /// <summary>
-    ///     Used to encrypt rho file data, or DataProcessed data.
-    /// </summary>
-    /// <param name="Data"></param>
-    /// <param name="Key"></param>
-    /// <returns></returns>
-    public static byte[] EncryptData(uint Key, byte[] Data)
-    {
-        var extendedKey = RhoKey.ExtendKey(Key);
-        var output = new byte[Data.Length];
-        for (var i = 0; i < Data.Length; i++) output[i] = (byte)(Data[i] ^ extendedKey[i & 63]);
-        return output;
-    }
 
     public static void EncryptData(uint Key, byte[] Data, int Offset, int Length)
     {

@@ -1,9 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace KartLibrary.File;
+﻿namespace KartLibrary.File;
 
 public class Rho5DataSource : IDataSource
 {
@@ -26,64 +21,13 @@ public class Rho5DataSource : IDataSource
 
     #region Properties
 
-    public bool Locked => false; // BufferedDataSource don't require lock.
-
     public int Size => _fileHandler._decompressedSize;
 
     #endregion
 
     #region Methods
 
-    public Stream CreateStream()
-    {
-        var data = _fileHandler.getData();
-        return new MemoryStream(data, false);
-    }
-
-    public void WriteTo(Stream stream)
-    {
-        if (!stream.CanWrite)
-            throw new Exception("This stream is not writeable");
-        var data = _fileHandler.getData();
-        stream.Write(data, 0, data.Length);
-    }
-
-    public async Task WriteToAsync(Stream stream, CancellationToken cancellationToken = default)
-    {
-        if (!stream.CanWrite)
-            throw new Exception("This stream is not writeable");
-        var data = _fileHandler.getData();
-        await stream.WriteAsync(data, 0, data.Length, cancellationToken);
-    }
-
-    public void WriteTo(byte[] buffer, int offset, int count)
-    {
-        if (buffer.Length - offset < count)
-            throw new IndexOutOfRangeException("given buffer is not enough to store the required data.");
-        if (count > _fileHandler._decompressedSize)
-            throw new IndexOutOfRangeException("size is greater than file.");
-        var data = _fileHandler.getData();
-        Array.Copy(data, 0, buffer, offset, count);
-    }
-
-    public async Task WriteToAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
-    {
-        if (buffer.Length - offset < count)
-            throw new IndexOutOfRangeException("given buffer is not enough to store the required data.");
-        if (count > _fileHandler._decompressedSize)
-            throw new IndexOutOfRangeException("size is greater than file.");
-        var data = _fileHandler.getData();
-        await Task.Run(() => Array.Copy(data, 0, buffer, offset, count));
-    }
-
-
     public byte[] GetBytes()
-    {
-        var data = _fileHandler.getData();
-        return data;
-    }
-
-    public async Task<byte[]> GetBytesAsync(CancellationToken cancellationToken = default)
     {
         var data = _fileHandler.getData();
         return data;

@@ -17,14 +17,6 @@ public class OutPacket : IDisposable
 
     public bool Disposed { get; private set; }
 
-    public int Length => (int)m_stream.Position;
-
-    public int Position
-    {
-        get => (int)m_stream.Position;
-        set => m_stream.Position = value;
-    }
-
     public new void Dispose()
     {
         Disposed = true;

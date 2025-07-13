@@ -1,8 +1,3 @@
-using KartLibrary.Consts;
-using KartLibrary.Data;
-using KartLibrary.File;
-using KartLibrary.IO;
-using KartLibrary.Xml;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,6 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
+using KartLibrary.Consts;
+using KartLibrary.Data;
+using KartLibrary.File;
+using KartLibrary.IO;
+using KartLibrary.Xml;
 
 namespace KRPackTool;
 
@@ -416,7 +416,7 @@ public static class Program
             {
                 var folderName = splitParts[i];
                 var subFolder = currentFolder.Elements("PackFolder")
-                    .FirstOrDefault(f => (string?)f.Attribute("name") == folderName);
+                    .FirstOrDefault(f => (string)f.Attribute("name") == folderName);
                 if (subFolder == null)
                 {
                     if (folderName == "character" || folderName == "flyingPet" || folderName == "pet" ||

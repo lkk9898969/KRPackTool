@@ -1,12 +1,12 @@
-﻿using Ionic.Zlib;
-using KartLibrary.Consts;
-using KartLibrary.Encrypt;
-using KartLibrary.IO;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
+using Ionic.Zlib;
+using KartLibrary.Consts;
+using KartLibrary.Encrypt;
+using KartLibrary.IO;
 
 namespace KartLibrary.File;
 
@@ -26,29 +26,12 @@ public class Rho5Archive
 
     #endregion
 
-    #region Structs
-
-    private class DataSavingInfo
-    {
-        public byte[] Data;
-        public Rho5File? File;
-    }
-
-    #endregion
-
     #region Members
 
     // private FileStream? _rho5Stream;
     private readonly Dictionary<int, FileStream> _rho5Streams;
     private readonly Dictionary<string, Rho5FileHandler> _fileHandlers;
     private readonly Dictionary<int, int> _dataBeginPoses;
-
-    #endregion
-
-    #region Properties
-
-
-    public bool IsClosed { get; }
 
     #endregion
 

@@ -1,10 +1,10 @@
-﻿using Ionic.Zlib;
-using KartLibrary.Encrypt;
-using KartLibrary.IO;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Ionic.Zlib;
+using KartLibrary.Encrypt;
+using KartLibrary.IO;
 using Adler = KartLibrary.IO.Adler;
 
 namespace KartLibrary.File;
@@ -39,7 +39,7 @@ public partial class RhoArchive : IRhoArchive<RhoFolder, RhoFile>
         public readonly RhoDataInfo DataInfo = new();
         public byte[] Data;
         public IDataSource DataSource;
-        public RhoFile? File;
+        public RhoFile File;
     }
 
     #endregion
@@ -47,7 +47,7 @@ public partial class RhoArchive : IRhoArchive<RhoFolder, RhoFile>
     #region Members
 
     private readonly int _layerVersion = 1; // 1.0 = 0, 1.1 = 1
-    private FileStream? _rhoStream;
+    private FileStream _rhoStream;
 
     private Dictionary<uint, RhoDataInfo> _dataInfoMap;
 
@@ -260,11 +260,6 @@ public partial class RhoArchive : IRhoArchive<RhoFolder, RhoFile>
         if (!IsClosed)
             Close();
         releaseAllHandlers();
-    }
-
-    internal Stream? getRhoStream()
-    {
-        return _rhoStream;
     }
 
     internal byte[] getData(RhoFileHandler handler)

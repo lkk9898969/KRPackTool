@@ -1,88 +1,40 @@
 ﻿using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace KartLibrary.File
+namespace KartLibrary.File;
+
+public class FileDataSource : IDataSource
 {
-    public class FileDataSource : IDataSource
+    private readonly string _fileName;
+    private bool _disposed;
+
+    public FileDataSource(string fileName)
     {
-        private string _fileName;
-        private int _size;
-        private bool _disposed;
-
-        public bool Locked => false;
-
-        public int Size => _size;
-
-        public FileDataSource(string fileName)
+        if (!System.IO.File.Exists(fileName))
+            throw new FileNotFoundException("file not found", fileName);
+        _fileName = fileName;
+        using (var tmpFileStream = new FileStream(_fileName, FileMode.Open, FileAccess.Read))
         {
-            if (!System.IO.File.Exists(fileName))
-                throw new FileNotFoundException("file not found", fileName);
-            _fileName = fileName;
-            using (FileStream tmpFileStream = new FileStream(_fileName, FileMode.Open, FileAccess.Read))
-            {
-                _size = (int)tmpFileStream.Length;
-            }
-            _disposed = false;
+            Size = (int)tmpFileStream.Length;
         }
 
-        public Stream CreateStream()
-        {
-            return new FileStream(_fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-        }
+        _disposed = false;
+    }
 
-        public void WriteTo(Stream stream)
-        {
-            using (FileStream tmpFileStream = new FileStream(_fileName, FileMode.Open, FileAccess.Read))
-            {
-                tmpFileStream.CopyTo(stream);
-            }
-        }
 
-        public async Task WriteToAsync(Stream stream, CancellationToken cancellationToken = default)
-        {
-            using (FileStream tmpFileStream = new FileStream(_fileName, FileMode.Open, FileAccess.Read))
-            {
-                await tmpFileStream.CopyToAsync(stream, cancellationToken);
-            }
-        }
+    public int Size { get; }
 
-        public void WriteTo(byte[] buffer, int offset, int count)
-        {
-            using (FileStream tmpFileStream = new FileStream(_fileName, FileMode.Open, FileAccess.Read))
-            {
-                tmpFileStream.Read(buffer, offset, count);
-            }
-        }
 
-        public async Task WriteToAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
+    public byte[] GetBytes()
+    {
+        using (var tmpFileStream = new FileStream(_fileName, FileMode.Open, FileAccess.Read))
         {
-            using (FileStream tmpFileStream = new FileStream(_fileName, FileMode.Open, FileAccess.Read))
-            {
-                await tmpFileStream.ReadAsync(buffer, offset, count, cancellationToken);
-            }
-        }
-
-        public byte[] GetBytes()
-        {
-            using (FileStream tmpFileStream = new FileStream(_fileName, FileMode.Open, FileAccess.Read))
-            {
-                byte[] output = new byte[_size];
-                tmpFileStream.Read(output);
-                return output;
-            }
-        }
-
-        public async Task<byte[]> GetBytesAsync(CancellationToken cancellationToken = default)
-        {
-            byte[] output = new byte[_size];
-            await WriteToAsync(output, 0, output.Length);
+            var output = new byte[Size];
+            tmpFileStream.Read(output);
             return output;
         }
-
-        public void Dispose()
-        {
-            _disposed = true;
-        }
+    }
+    public void Dispose()
+    {
+        _disposed = true;
     }
 }

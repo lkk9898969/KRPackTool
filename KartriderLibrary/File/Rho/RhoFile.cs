@@ -1,10 +1,7 @@
-﻿using KartLibrary.IO;
-using System;
-using System.IO;
+﻿using System;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
+using KartLibrary.IO;
 
 namespace KartLibrary.File;
 
@@ -27,7 +24,7 @@ public class RhoFile : IRhoFile, IModifiableRhoFile
 
     #region Members
 
-    internal RhoFolder? _parentFolder;
+    internal RhoFolder _parentFolder;
 
     private string _name;
     private string _fullname;
@@ -35,7 +32,7 @@ public class RhoFile : IRhoFile, IModifiableRhoFile
     private uint? _dataIndexBase;
 
     private string _originalName;
-    private IDataSource? _originalSource;
+    private IDataSource _originalSource;
 
     private bool _disposed;
 
@@ -43,7 +40,7 @@ public class RhoFile : IRhoFile, IModifiableRhoFile
 
     #region Properties
 
-    public RhoFolder? Parent => _parentFolder;
+    public RhoFolder Parent => _parentFolder;
 
     public string Name
     {
@@ -68,7 +65,7 @@ public class RhoFile : IRhoFile, IModifiableRhoFile
 
     public int Size => DataSource?.Size ?? 0;
 
-    public IDataSource? DataSource { get; set; }
+    public IDataSource DataSource { get; set; }
 
     public RhoFileProperty FileEncryptionProperty { get; set; }
 
@@ -79,55 +76,6 @@ public class RhoFile : IRhoFile, IModifiableRhoFile
     #endregion
 
     #region Methods
-
-    public Stream CreateStream()
-    {
-        if (DataSource is null)
-            throw new InvalidOperationException("There are no any data source.");
-        return DataSource.CreateStream();
-    }
-
-    public void WriteTo(Stream stream)
-    {
-        if (DataSource is null)
-            throw new InvalidOperationException("There are no any data source.");
-        DataSource.WriteTo(stream);
-    }
-
-    public async Task WriteToAsync(Stream stream, CancellationToken cancellationToken = default)
-    {
-        if (DataSource is null)
-            throw new InvalidOperationException("There are no any data source.");
-        await DataSource.WriteToAsync(stream, cancellationToken);
-    }
-
-    public void WriteTo(byte[] array, int offset, int count)
-    {
-        if (DataSource is null)
-            throw new InvalidOperationException("There are no any data source.");
-        WriteTo(array, offset, count);
-    }
-
-    public async Task WriteToAsync(byte[] array, int offset, int count, CancellationToken cancellationToken = default)
-    {
-        if (DataSource is null)
-            throw new InvalidOperationException("There are no any data source.");
-        await WriteToAsync(array, offset, count, cancellationToken);
-    }
-
-    public byte[] GetBytes()
-    {
-        if (DataSource is null)
-            throw new InvalidOperationException("There are no any data source.");
-        return DataSource.GetBytes();
-    }
-
-    public async Task<byte[]> GetBytesAsync(CancellationToken cancellationToken = default)
-    {
-        if (DataSource is null)
-            throw new InvalidOperationException("There are no any data source.");
-        return await DataSource.GetBytesAsync(cancellationToken);
-    }
 
     public void Dispose()
     {
@@ -140,13 +88,6 @@ public class RhoFile : IRhoFile, IModifiableRhoFile
         return $"RhoFile:{FullName}";
     }
 
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!_disposed)
-            if (disposing)
-            {
-            }
-    }
 
     internal uint getExtNum()
     {
@@ -183,12 +124,6 @@ public class RhoFile : IRhoFile, IModifiableRhoFile
         if (folderDataIndex == 0xFFFFFFFFu)
             folderDataIndex = 0;
         return _dataIndexBase.Value + folderDataIndex;
-    }
-
-    internal void appliedChanges()
-    {
-        _originalName = _name;
-        _originalSource = DataSource;
     }
 
     #endregion

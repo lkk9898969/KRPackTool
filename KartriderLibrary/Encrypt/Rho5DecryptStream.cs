@@ -130,10 +130,6 @@ public class Rho5DecryptStream : Stream
         return true;
     }
 
-    public void SetToHeaderKey(string fileName, string anotherData)
-    {
-        KeyProvider.InitHeaderKey(fileName, anotherData);
-    }
 
     public void SetToFilesInfoKey(string fileName, string anotherData)
     {
