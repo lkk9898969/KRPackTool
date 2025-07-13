@@ -1,14 +1,10 @@
 using System;
-using System.Globalization;
 using System.IO;
-using System.Net;
 using System.Text;
-using KartNew.Utilities;
-using KartRider.Common.Utilities;
 
-namespace KartRider.IO.Packet;
+namespace KartLibrary.IO;
 
-public class OutPacket : PacketBase, IDisposable
+public class OutPacket : IDisposable
 {
     private MemoryStream m_stream;
 
@@ -18,16 +14,12 @@ public class OutPacket : PacketBase, IDisposable
         Disposed = false;
     }
 
-    public OutPacket(string rttiVal) : this()
-    {
-        WriteUInt(Adler32Helper.GenerateAdler32(Encoding.ASCII.GetBytes(rttiVal)));
-    }
 
     public bool Disposed { get; private set; }
 
-    public override int Length => (int)m_stream.Position;
+    public int Length => (int)m_stream.Position;
 
-    public override int Position
+    public int Position
     {
         get => (int)m_stream.Position;
         set => m_stream.Position = value;
@@ -54,17 +46,12 @@ public class OutPacket : PacketBase, IDisposable
         if (Disposed) throw new ObjectDisposedException(GetType().FullName);
     }
 
-    public override byte[] ToArray()
+    public byte[] ToArray()
     {
         ThrowIfDisposed();
         return m_stream.ToArray();
     }
 
-    public void WriteBool(bool value)
-    {
-        ThrowIfDisposed();
-        WriteByte((byte)(value ? 1 : 0));
-    }
 
     public void WriteByte(byte value = 0)
     {
@@ -72,78 +59,10 @@ public class OutPacket : PacketBase, IDisposable
         m_stream.WriteByte(value);
     }
 
-    public void WriteBytes(params byte[] value)
-    {
-        ThrowIfDisposed();
-        m_stream.Write(value, 0, value.Length);
-    }
-
-    public void WriteEncByte(byte value)
-    {
-        WriteBytes(CryptoConstants.encryptBytes(new[] { value }));
-    }
-
-    public void WriteEncFloat(float value)
-    {
-        WriteBytes(CryptoConstants.encryptBytes(BitConverter.GetBytes(value)));
-    }
-
-    public void WriteEncInt(int value)
-    {
-        WriteBytes(CryptoConstants.encryptBytes(BitConverter.GetBytes(value)));
-    }
-
-    public void WriteEncUInt(uint value)
-    {
-        WriteBytes(CryptoConstants.encryptBytes(BitConverter.GetBytes(value)));
-    }
-
-    public void WriteEndPoint(IPEndPoint endpoint)
-    {
-        if (endpoint != null)
-        {
-            WriteEndPoint(endpoint.Address, (ushort)endpoint.Port);
-        }
-        else
-        {
-            WriteInt();
-            WriteUShort();
-        }
-    }
-
-    public void WriteEndPoint(IPAddress ip, ushort port)
-    {
-        WriteBytes(ip.GetAddressBytes());
-        WriteUShort(port);
-    }
-
-    public void WriteFloat(float value = 0f)
-    {
-        WriteBytes(BitConverter.GetBytes(value));
-    }
-
-    public void WriteHexString(string value)
-    {
-        if (value == null) throw new ArgumentNullException("value");
-        value = value.Replace(" ", "");
-        for (var i = 0; i < value.Length; i += 2) WriteByte(byte.Parse(value.Substring(i, 2), NumberStyles.HexNumber));
-    }
-
     public void WriteInt(int value = 0)
     {
         ThrowIfDisposed();
         Append(value, 4);
-    }
-
-    public void WriteLong(long value = 0L)
-    {
-        ThrowIfDisposed();
-        Append(value, 8);
-    }
-
-    public void WriteSByte(sbyte value = 0)
-    {
-        WriteByte((byte)value);
     }
 
     public void WriteShort(short value = 0)
@@ -176,40 +95,5 @@ public class OutPacket : PacketBase, IDisposable
             WriteShort();
             i++;
         }
-    }
-
-    public void WriteTime(DateTime time)
-    {
-        WriteTime(time == DateTime.MinValue ? -1 : time.Ticks);
-    }
-
-    public void WriteTime(long ticks)
-    {
-        if (ticks != -1)
-        {
-            var dateTime = new DateTime(ticks);
-            WriteShort((short)(TimeUtil.GetDays(dateTime) - 1));
-            WriteShort((short)(dateTime.Second / 4 + dateTime.Minute * 15 + dateTime.Hour * 900));
-        }
-        else
-        {
-            WriteShort(-1);
-            WriteShort();
-        }
-    }
-
-    public void WriteUInt(uint value = 0)
-    {
-        WriteInt((int)value);
-    }
-
-    public void WriteULong(ulong value = 0L)
-    {
-        WriteLong((long)value);
-    }
-
-    public void WriteUShort(ushort value = 0)
-    {
-        WriteShort((short)value);
     }
 }
