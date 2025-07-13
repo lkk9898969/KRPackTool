@@ -43,10 +43,10 @@ public static class Program
             }
         }
 
-        Start(args);
+        PackTool(args);
     }
 
-    public static void Start(string[] args)
+    public static void PackTool(string[] args)
     {
         foreach (var arg in args)
         {
@@ -244,13 +244,6 @@ public static class Program
             }
     }
 
-    private static string ReplacePath(string file)
-    {
-        return file.IndexOf(".rho") > -1
-            ? file.Substring(0, file.IndexOf(".rho")).Replace("_", "/") + file.Substring(file.IndexOf(".rho") + 4)
-            : file;
-    }
-
     private static void BtoX(string input)
     {
         if (!File.Exists(input))
@@ -445,6 +438,7 @@ public static class Program
                 new XAttribute("dataHash", dataHash.ToString()),
                 new XAttribute("mediaSize", size.ToString()));
             currentFolder.Add(rhoFolder);
+            rho.Dispose();
         }
 
         root.Save(input + "\\aaa.xml");
