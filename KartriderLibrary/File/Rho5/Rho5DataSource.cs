@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace KartLibrary.File;
 
-public class Rho5DataSource
+public class Rho5DataSource : IDataSource
 {
     #region Constructors
 
@@ -89,6 +89,10 @@ public class Rho5DataSource
         return data;
     }
 
+    public void Dispose()
+    {
+        _disposed = true;
+    }
 
     #endregion
 }

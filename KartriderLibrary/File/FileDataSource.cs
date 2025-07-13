@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace KartLibrary.File
 {
-    public class FileDataSource
+    public class FileDataSource : IDataSource
     {
         private string _fileName;
         private int _size;
