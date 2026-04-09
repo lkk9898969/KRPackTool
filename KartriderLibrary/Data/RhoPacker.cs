@@ -9,8 +9,9 @@ using System.Xml.Linq;
 using KartLibrary.Consts;
 using KartLibrary.Data;
 using KartLibrary.File;
+using KartLibrary.IO;
 using KartLibrary.Xml;
-using KartRider.IO.Packet;
+//using KartRider.IO.Packet;
 using KRPackTool;
 //using RHOParser;
 
@@ -90,6 +91,7 @@ public static class RhoPacker
         GetAllFiles(targetPath, rhoArchive.RootFolder);
 
         rhoArchive.SaveTo(output);
+        rhoArchive.Dispose();
     }
 
     private static void GetAllFiles(string folderPath, RhoFolder folder)

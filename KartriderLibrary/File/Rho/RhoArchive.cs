@@ -27,7 +27,7 @@ public partial class RhoArchive : IRhoArchive<RhoFolder, RhoFile>
         RootFolder = new RhoFolder();
         _fileHandlers = new Dictionary<uint, RhoFileHandler>();
         _dataInfoMap = new Dictionary<uint, RhoDataInfo>();
-        IsClosed = true;
+        IsClosed = false;
     }
 
     #endregion
