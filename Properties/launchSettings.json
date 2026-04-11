@@ -2,7 +2,7 @@
   "profiles": {
     "Launcher": {
       "commandName": "Project",
-      "commandLineArgs": "D:\\Kartrider\\PPpacked\\rho\\theme_china"
+      "commandLineArgs": "D:\\Kartrider\\PPunpack\\stage_mainMenu.rho"
     }
   }
 }

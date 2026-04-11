@@ -177,16 +177,13 @@ public static class RhoPacker
                 RhoFolders(output, fileName, packFolderInfo);
             }
         }
-        // 确保输出目录存在
-        if (!Directory.Exists(output))
-            Directory.CreateDirectory(output);
     }
 
     private static void RhoFolders(string input, string output, PackFolderInfo rhoFolders)
     {
         // 创建当前目录（包括空目录）
-        if (!Directory.Exists(output))
-            Directory.CreateDirectory(output);
+        //if (!Directory.Exists(output))
+        //    Directory.CreateDirectory(output);
 
         if (rhoFolders.GetFilesInfo() != null)
         {
@@ -207,9 +204,9 @@ public static class RhoPacker
         {
             foreach (var rhoFolder in rhoFolders.Folders)
             {
-                string Folder = output + "/" + rhoFolder.FolderName;
-                if (!Directory.Exists(Folder))
-                    Directory.CreateDirectory(Folder);
+                string Folder = rhoFolder.FolderName;
+                //if (!Directory.Exists(Folder))
+                //    Directory.CreateDirectory(Folder);
                 RhoFolders(input, Folder, rhoFolder);
             }
         }
