@@ -174,7 +174,7 @@ public static class RhoPacker
             foreach (PackFolderInfo packFolderInfo in packFolderInfos.GetFoldersInfo())
             {
                 string fileName = Path.GetFileNameWithoutExtension(packFolderInfo.FolderName);
-                RhoFolders(output, output + "/" + fileName, packFolderInfo);
+                RhoFolders(output, fileName, packFolderInfo);
             }
         }
         // 确保输出目录存在
@@ -192,7 +192,7 @@ public static class RhoPacker
         {
             foreach (var item in rhoFolders.GetFilesInfo())
             {
-                string fullName = output + "/" + ReplacePath(item.FullName);
+                string fullName = ReplacePath(item.FullName);
                 string Name = Path.GetDirectoryName(fullName);
                 if (!Directory.Exists(Name))
                     Directory.CreateDirectory(Name);
