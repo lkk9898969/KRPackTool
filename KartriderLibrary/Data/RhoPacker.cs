@@ -226,12 +226,15 @@ public static class RhoPacker
             return;
         var data = File.ReadAllBytes(input);
         var bxd = new BinaryXmlDocument();
-        bxd.Read(Encoding.GetEncoding("UTF-16"), data);
+        bxd.Read(Encoding.Unicode, data);
         var output_bml = bxd.RootTag.ToString();
-        var output_data = Encoding.GetEncoding("UTF-16").GetBytes(output_bml);
+        var output_data = Encoding.Unicode.GetBytes(output_bml);
         var filePath = Path.ChangeExtension(input, "xml");
         using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
         {
+            byte[] bom = Encoding.Unicode.GetPreamble();
+            // 2. 先把 BOM 寫進去
+            fs.Write(bom, 0, bom.Length);
             fs.Write(output_data, 0, output_data.Length);
         }
     }
