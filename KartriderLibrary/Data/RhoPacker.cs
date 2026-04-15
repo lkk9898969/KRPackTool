@@ -531,7 +531,7 @@ public static class RhoPacker
             case ".xml":
                 return 3;
             case ".png":
-                return (fileSize <= 256) ? 4 : 5;
+                return (fileSize <= 256) ? 3 : 4;
             case ".kap":
             case ".ogg":
             case ".jpg":
