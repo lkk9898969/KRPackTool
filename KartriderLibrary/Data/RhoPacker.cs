@@ -189,12 +189,12 @@ public static class RhoPacker
         {
             foreach (var item in rhoFolders.GetFilesInfo())
             {
-                string fullName = ReplacePath(item.FullName);
-                string Name = Path.GetDirectoryName(fullName);
+                string fullName = (item.FullName).Replace(".rho", "");
+                string Name = Path.Combine(input, "..", Path.GetDirectoryName(fullName));
                 if (!Directory.Exists(Name))
                     Directory.CreateDirectory(Name);
                 byte[] data = item.GetData();
-                using (FileStream fileStream = new FileStream(fullName, FileMode.OpenOrCreate))
+                using (FileStream fileStream = new FileStream(Path.Combine(input, "..", fullName), FileMode.OpenOrCreate))
                 {
                     fileStream.Write(data, 0, data.Length);
                 }
