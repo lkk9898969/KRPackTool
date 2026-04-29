@@ -400,11 +400,23 @@ public static class RhoPacker
                 currentFolder = subFolder;
             }
 
-            var rho = new Rho(file);
-            var rhoKey = rho.GetFileKey();
-            var dataHash = rho.GetDataHash();
-            var size = rho.baseStream.Length;
-            var rhoFolderName = splitParts.Length > 0
+            uint rhoKey = 0;
+            uint dataHash = 0;
+            long size = 0;
+            Rho rho = null;
+            try
+            {
+                rho = new Rho(file);
+                rhoKey = rho.GetFileKey();
+                dataHash = rho.GetDataHash();
+                size = rho.baseStream.Length;
+            }
+            catch (NotSupportedException) { }
+            finally
+            {
+                rho?.Dispose();
+            }
+            string rhoFolderName = splitParts.Length > 0
                 ? Path.ChangeExtension(splitParts[splitParts.Length - 1], null)
                 : "";
             var rhoFolder = new XElement("RhoFolder",
@@ -414,7 +426,6 @@ public static class RhoPacker
                 new XAttribute("dataHash", dataHash.ToString()),
                 new XAttribute("mediaSize", size.ToString()));
             currentFolder.Add(rhoFolder);
-            rho.Dispose();
         }
 
         root.Save(input + "\\aaa.xml");
