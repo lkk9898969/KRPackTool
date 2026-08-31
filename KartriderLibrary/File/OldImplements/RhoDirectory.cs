@@ -7,8 +7,6 @@ namespace KartLibrary.File;
 
 public class RhoDirectory
 {
-    public static Dictionary<RhoFileProperty, Dictionary<string, int>> counter = new();
-
     public RhoDirectory(Rho BaseRho)
     {
         this.BaseRho = BaseRho;
@@ -74,11 +72,6 @@ public class RhoDirectory
 
                 rfi.Extension = strBuilder.ToString();
                 Files.Add(rfi.FullFileName, rfi);
-                if (!counter.ContainsKey(rfi.FileProperty))
-                    counter.Add(rfi.FileProperty, new Dictionary<string, int>());
-                if (!counter[rfi.FileProperty].ContainsKey(rfi.Extension))
-                    counter[rfi.FileProperty].Add(rfi.Extension, 0);
-                counter[rfi.FileProperty][rfi.Extension]++;
             }
         }
     }

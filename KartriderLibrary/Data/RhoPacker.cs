@@ -1,9 +1,11 @@
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using KartLibrary.Consts;
@@ -27,55 +29,160 @@ public static class RhoPacker
 
     public static void PackTool(string[] args)
     {
-        foreach (var arg in args)
+        // 一般情況下每個 arg 是彼此獨立的資料夾路徑，可以平行處理。
+        // 若兩個 arg 之間存在父子（祖先／後代）關係，則它們可能讀寫到同一批檔案，
+        // 因此把有父子關係的 arg 併成同一組：組內循序處理，組間平行處理。
+        var groups = GroupArgsByHierarchy(args);
+
+        var parallelOptions = new ParallelOptions
         {
-            Program.CC = Program.parseCountryCode(Path.GetDirectoryName(arg));
-            if (arg.EndsWith(".rho") || arg.EndsWith(".rho5"))
+            MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount)
+        };
+
+        // encodea 分支只會產出 <arg>.rho，並把「需要重建 aaa.xml 的父目錄」登記於此。
+        // 等到所有 encodea 都跑完，再對每個父目錄各做一次 AAAC，
+        // 這樣可保證所有 .rho 都已產出，且 aaa.xml 內容正確、不會被多個兄弟目錄重複改寫。
+        var pendingAaac = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        Parallel.ForEach(groups, parallelOptions, group =>
+        {
+            foreach (var arg in group)
+                ProcessArg(arg, pendingAaac);
+        });
+
+        // 不同父目錄各自寫入自己的 aaa.xml，彼此獨立，可平行。
+        Parallel.ForEach(pendingAaac.Values, parallelOptions, parent =>
+        {
+            var files = Directory.GetFiles(parent, "*.rho");
+            AAAC(parent, files);
+        });
+    }
+
+    private static void ProcessArg(string arg, ConcurrentDictionary<string, string> pendingAaac)
+    {
+        // 原本 Program.CC 是靜態欄位、逐一 arg 覆寫，平行化後會有競態；
+        // 改成在這裡算出各自的 CountryCode，再往下傳。
+        CountryCode cc = Program.parseCountryCode(Path.GetDirectoryName(arg));
+        if (arg.EndsWith(".rho") || arg.EndsWith(".rho5"))
+        {
+            decode(arg, arg, cc);
+        }
+        else if (arg.EndsWith("aaa.xml"))
+        {
+            AAAD(arg);
+        }
+        else if (arg.EndsWith(".xml"))
+        {
+            XtoB(arg);
+        }
+        else if (arg.EndsWith(".bml"))
+        {
+            BtoX(arg);
+        }
+        else if (arg.EndsWith(".pk"))
+        {
+            AAAR(arg);
+        }
+        else
+        {
+            if (!Directory.Exists(arg))
+                return;
+            var temp = Directory.GetFiles(arg);
+            var dirTemp = Directory.GetDirectories(arg);
+            if (temp.Length == 0 && dirTemp.All(dir => datapack.Contains(Path.GetFileName(dir))) && dirTemp.Length != 0)
             {
-                decode(arg, arg);
-            }
-            else if (arg.EndsWith("aaa.xml"))
-            {
-                AAAD(arg);
-            }
-            else if (arg.EndsWith(".xml"))
-            {
-                XtoB(arg);
-            }
-            else if (arg.EndsWith(".bml"))
-            {
-                BtoX(arg);
-            }
-            else if (arg.EndsWith(".pk"))
-            {
-                AAAR(arg);
+                encode(arg, arg, cc);
             }
             else
             {
-                if (!Directory.Exists(arg))
-                    return;
-                var temp = Directory.GetDirectories(arg);
-                if (temp.All(dir => datapack.Contains(Path.GetFileName(dir))) && temp.Length != 0)
+                var files = Directory.GetFiles(arg, "*.rho");
+                if (files.Length > 0)
                 {
-                    encode(arg, arg);
+                    AAAC(arg, files);
                 }
                 else
                 {
-                    var files = Directory.GetFiles(arg, "*.rho");
-                    if (files.Length > 0)
-                    {
-                        AAAC(arg, files);
-                    }
-                    else
-                    {
-                        encodea(arg, arg);
-                        var parent = Path.GetDirectoryName(arg);
-                        files = Directory.GetFiles(parent, "*.rho");
-                        AAAC(parent, files);
-                    }
+                    // encodea 只在上一層目錄產出 <arg>.rho；aaa.xml 的重建延後到所有 encodea 完成後
+                    // 由 PackTool 對每個父目錄統一各做一次，避免同父目錄的兄弟互相改寫。
+                    encodea(arg, arg);
+                    var parent = NormalizePath(Path.GetDirectoryName(arg));
+                    pendingAaac.TryAdd(parent, parent);
                 }
             }
         }
+    }
+
+    private static string NormalizePath(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+            return string.Empty;
+        try
+        {
+            return Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
+        }
+        catch
+        {
+            return path;
+        }
+    }
+
+    private static bool IsSameOrDescendant(string path, string ancestor)
+    {
+        if (ancestor.Length == 0 || path.Length == 0)
+            return false;
+        if (string.Equals(path, ancestor, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return path.Length > ancestor.Length
+            && path.StartsWith(ancestor, StringComparison.OrdinalIgnoreCase)
+            && (path[ancestor.Length] == Path.DirectorySeparatorChar
+                || path[ancestor.Length] == Path.AltDirectorySeparatorChar);
+    }
+
+    // 用 Union-Find 把有祖先／後代關係的 arg 併成同一組；組內保留原本的處理順序。
+    private static List<List<string>> GroupArgsByHierarchy(string[] args)
+    {
+        int n = args.Length;
+        var full = new string[n];
+        for (int i = 0; i < n; i++)
+            full[i] = NormalizePath(args[i]);
+
+        var parent = new int[n];
+        for (int i = 0; i < n; i++)
+            parent[i] = i;
+
+        int Find(int x)
+        {
+            while (parent[x] != x)
+                x = parent[x] = parent[parent[x]];
+            return x;
+        }
+
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = i + 1; j < n; j++)
+            {
+                if (IsSameOrDescendant(full[i], full[j]) || IsSameOrDescendant(full[j], full[i]))
+                {
+                    int ri = Find(i), rj = Find(j);
+                    if (ri != rj)
+                        parent[ri] = rj;
+                }
+            }
+        }
+
+        var buckets = new Dictionary<int, List<string>>();
+        for (int i = 0; i < n; i++)
+        {
+            int root = Find(i);
+            if (!buckets.TryGetValue(root, out var list))
+            {
+                list = new List<string>();
+                buckets[root] = list;
+            }
+            list.Add(args[i]);
+        }
+
+        return buckets.Values.ToList();
     }
 
     private static void encodea(string input, string output)
@@ -125,10 +232,9 @@ public static class RhoPacker
         }
     }
 
-    private static void encode(string input, string output)
+    private static void encode(string input, string output, CountryCode CC)
     {
         string aaaPath = Path.Combine(Directory.GetParent(input).FullName, "aaa.pk");
-        CountryCode CC = Program.CC;
         var rho5Archive = new Rho5Archive();
         if (!output.EndsWith(".rho5"))
             output += ".rho5";
@@ -154,13 +260,12 @@ public static class RhoPacker
         }
     }
 
-    private static void decode(string input, string output)
+    private static void decode(string input, string output, CountryCode CC)
     {
         if (output.EndsWith(".rho"))
             output = output.Replace(".rho", "");
         if (output.EndsWith(".rho5"))
             output = output.Replace(".rho5", "");
-        CountryCode CC = Program.CC;
         string aaaPath = Path.Combine(Directory.GetParent(input).FullName, "aaa.pk");
 
         PackFolderManager packFolderManager = new PackFolderManager();
