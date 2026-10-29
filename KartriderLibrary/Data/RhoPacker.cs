@@ -301,10 +301,12 @@ public static class RhoPacker
 
         try
         {
-            var (digits, nonce) = LpkV4.Parameters(LpkV4.DEFAULT_MIXING);
+            // mixing 是整包的根密鑰，存在包內的 head + mid，每個包各自讀出。
+            string mixing = LpkV4.ReadMixing(input);
+            var (digits, nonce) = LpkV4.Parameters(mixing);
             using var fileStream = new FileStream(input, FileMode.Open, FileAccess.Read, FileShare.Read);
             // LPK 的金鑰由檔名推導，因此必須使用原始檔名。
-            LpkIndex index = LpkV4.Decode(fileStream, Path.GetFileName(input), LpkV4.DEFAULT_MIXING);
+            LpkIndex index = LpkV4.Decode(fileStream, Path.GetFileName(input), mixing);
             foreach (var record in index.Records)
             {
                 string target = Path.GetFullPath(Path.Combine(baseDir, record.Path.Replace('\\', '/').TrimStart('/')));
@@ -329,6 +331,56 @@ public static class RhoPacker
         catch (LpkException ex)
         {
             Console.WriteLine($"LPK 解包失敗：{input}：{ex.Message}");
+        }
+    }
+
+    // 把資料夾內容打包成 LPK（資料夾即包內根目錄）。output 省略時輸出為同層的 <資料夾名稱>.lpk。
+    // 注意：LPK 的金鑰由輸出檔名推導，檔名需與遊戲讀取的檔名一致。
+    // 若輸出位置已有同名 LPK，會沿用其 mixing、記錄順序與未改動檔案的密文，使結果盡量與原包一致。
+    // 目前尚未接上 ProcessArg 的入口。
+    private static void encodeLpk(string input, string output = null)
+    {
+        string inputDir = NormalizePath(input);
+        if (string.IsNullOrEmpty(output))
+            output = inputDir + ".lpk";
+
+        var entries = new List<LpkV4.LpkEntry>();
+        foreach (string file in Directory.GetFiles(inputDir, "*", SearchOption.AllDirectories))
+        {
+            entries.Add(new LpkV4.LpkEntry
+            {
+                Path = Path.GetRelativePath(inputDir, file).Replace('\\', '/'),
+                SourcePath = file
+            });
+        }
+        if (entries.Count == 0)
+        {
+            Console.WriteLine($"資料夾中沒有可打包的檔案：{inputDir}");
+            return;
+        }
+        // 固定順序，保證同一資料夾反覆打包結果一致（有原包時會改按原包順序）
+        entries.Sort((a, b) => string.CompareOrdinal(a.Path, b.Path));
+
+        LpkMetadata metadata = null;
+        if (File.Exists(output))
+        {
+            try
+            {
+                metadata = LpkV4.ReadMetadata(output);
+            }
+            catch (LpkException ex)
+            {
+                Console.WriteLine($"無法讀取原 LPK，改為全新打包：{output}：{ex.Message}");
+            }
+        }
+
+        try
+        {
+            LpkV4.Encode(output, entries, metadata);
+        }
+        catch (LpkException ex)
+        {
+            Console.WriteLine($"LPK 打包失敗：{output}：{ex.Message}");
         }
     }
 
