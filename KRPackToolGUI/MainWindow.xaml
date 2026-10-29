@@ -1,0 +1,100 @@
+<Window x:Class="KRPackToolGUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="KRPackTool GUI — rho5 檔案結構查詢"
+        Height="640" Width="1040"
+        WindowStartupLocation="CenterScreen"
+        AllowDrop="True" DragOver="Window_DragOver" Drop="Window_Drop">
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <ToolBarTray Grid.Row="0" IsLocked="True">
+            <ToolBar>
+                <Button x:Name="AddBtn" Content="新增 rho5…" Click="AddFiles_Click"/>
+                <Button x:Name="RemoveBtn" Content="移除選取" Click="RemoveSelected_Click"/>
+                <Button x:Name="ClearBtn" Content="清除清單" Click="ClearFiles_Click"/>
+                <Separator/>
+                <TextBlock Text="地區：" VerticalAlignment="Center" Margin="4,0"/>
+                <ComboBox x:Name="RegionBox" Width="230" SelectedIndex="0">
+                    <ComboBoxItem Tag="AUTO" Content="自動（CountryCode.ini，預設 TW）"/>
+                    <ComboBoxItem Tag="KR" Content="KR — 韓國"/>
+                    <ComboBoxItem Tag="CN" Content="CN — 中國"/>
+                    <ComboBoxItem Tag="TW" Content="TW — 台灣"/>
+                </ComboBox>
+                <Separator/>
+                <Button x:Name="ParseBtn" Content="解析" Click="Parse_Click" FontWeight="Bold" Padding="14,2"/>
+            </ToolBar>
+        </ToolBarTray>
+
+        <Grid Grid.Row="1" Margin="0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300" MinWidth="180"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <DockPanel Grid.Column="0">
+                <TextBlock DockPanel.Dock="Top" Text="已選 rho5 檔案（可多選、可拖放）"
+                           FontWeight="Bold" Margin="0,0,0,4"/>
+                <ListBox x:Name="FilesList" SelectionMode="Extended"
+                         HorizontalContentAlignment="Stretch">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" ToolTip="{Binding}"
+                                       TextTrimming="CharacterEllipsis"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"/>
+
+            <TabControl Grid.Column="2">
+                <TabItem Header="樹狀結構">
+                    <TreeView x:Name="StructureTree" FontFamily="Consolas, 微軟正黑體"/>
+                </TabItem>
+                <TabItem Header="平面清單">
+                    <DockPanel>
+                        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4" LastChildFill="True">
+                            <TextBlock Text="篩選：" VerticalAlignment="Center"/>
+                            <Button DockPanel.Dock="Right" x:Name="ExportBtn" Content="匯出 .txt"
+                                    Click="Export_Click" Margin="4,0,0,0" Padding="8,2"/>
+                            <Button DockPanel.Dock="Right" x:Name="CopyBtn" Content="複製"
+                                    Click="Copy_Click" Margin="4,0,0,0" Padding="8,2"/>
+                            <TextBox x:Name="FilterBox" TextChanged="FilterBox_TextChanged" Margin="4,0"
+                                     VerticalContentAlignment="Center"/>
+                        </DockPanel>
+                        <TextBlock DockPanel.Dock="Bottom" x:Name="FlatCount"
+                                   Foreground="Gray" Margin="0,4,0,0"/>
+                        <ListBox x:Name="FlatList" FontFamily="Consolas, 微軟正黑體"
+                                 SelectionMode="Extended"
+                                 VirtualizingPanel.IsVirtualizing="True"
+                                 VirtualizingPanel.VirtualizationMode="Recycling"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </DockPanel>
+                </TabItem>
+            </TabControl>
+        </Grid>
+
+        <StatusBar Grid.Row="2">
+            <StatusBarItem>
+                <TextBlock x:Name="StatusText" Text="就緒"/>
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right">
+                <ProgressBar x:Name="Busy" Width="150" Height="14"
+                             IsIndeterminate="False" Visibility="Collapsed"/>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyName>KRPackToolGUI</AssemblyName>
+    <RootNamespace>KRPackToolGUI</RootNamespace>
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ionic.Zlib.Core" Version="1.0.0" />
+  </ItemGroup>
+
+  <!--
+    KartriderLibrary has no project file of its own; its sources are globbed straight
+    into KRPackTool. This GUI reuses the same sources the same way.
+    RhoPacker.cs is excluded because it depends on KRPackTool.Program.
+  -->
+  <ItemGroup>
+    <Compile Include="..\KartriderLibrary\**\*.cs"
+             Exclude="..\KartriderLibrary\Data\RhoPacker.cs;..\KartriderLibrary\**\bin\**\*.cs;..\KartriderLibrary\**\obj\**\*.cs">
+      <Link>KartriderLibrary\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
+
+</Project>

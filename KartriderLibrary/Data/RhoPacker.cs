@@ -11,6 +11,7 @@ using System.Xml.Linq;
 using KartLibrary.Consts;
 using KartLibrary.Data;
 using KartLibrary.File;
+using KartLibrary.File.Lpk;
 using KartLibrary.IO;
 using KartLibrary.Xml;
 //using KartRider.IO.Packet;
@@ -65,7 +66,11 @@ public static class RhoPacker
         CountryCode cc = Program.parseCountryCode(Path.GetDirectoryName(arg));
         if (arg.EndsWith(".rho") || arg.EndsWith(".rho5"))
         {
-            decode(arg, arg, cc);
+            decode(arg, arg, cc, Program.parseCreateOwnFolder(Path.GetDirectoryName(arg), "RHO5"));
+        }
+        else if (arg.EndsWith(".lpk"))
+        {
+            decodeLpk(arg, Program.parseCreateOwnFolder(Path.GetDirectoryName(arg), "LPK"));
         }
         else if (arg.EndsWith("aaa.xml"))
         {
@@ -260,13 +265,16 @@ public static class RhoPacker
         }
     }
 
-    private static void decode(string input, string output, CountryCode CC)
+    private static void decode(string input, string output, CountryCode CC, bool createOwnFolder)
     {
         if (output.EndsWith(".rho"))
             output = output.Replace(".rho", "");
         if (output.EndsWith(".rho5"))
             output = output.Replace(".rho5", "");
         string aaaPath = Path.Combine(Directory.GetParent(input).FullName, "aaa.pk");
+        // .rho 內的路徑本身就以「<rho 名稱>/」開頭，解到上一層即會落在自己名稱的資料夾；
+        // .rho5 內的路徑不含自己的名稱，需依設定決定是否解到自己名稱的資料夾。
+        string baseDir = input.EndsWith(".rho5") && createOwnFolder ? output : Path.Combine(output, "..");
 
         PackFolderManager packFolderManager = new PackFolderManager();
         packFolderManager.OpenSingleFile(input, CC);
@@ -279,8 +287,48 @@ public static class RhoPacker
             foreach (PackFolderInfo packFolderInfo in packFolderInfos.GetFoldersInfo())
             {
                 string fileName = Path.GetFileNameWithoutExtension(packFolderInfo.FolderName);
-                RhoFolders(output, fileName, packFolderInfo);
+                RhoFolders(baseDir, fileName, packFolderInfo);
             }
+        }
+    }
+
+    private static void decodeLpk(string input, bool createOwnFolder)
+    {
+        string baseDir = Path.GetDirectoryName(Path.GetFullPath(input)) ?? "";
+        if (createOwnFolder)
+            baseDir = Path.Combine(baseDir, Path.GetFileNameWithoutExtension(input));
+        baseDir = NormalizePath(baseDir);
+
+        try
+        {
+            var (digits, nonce) = LpkV4.Parameters(LpkV4.DEFAULT_MIXING);
+            using var fileStream = new FileStream(input, FileMode.Open, FileAccess.Read, FileShare.Read);
+            // LPK 的金鑰由檔名推導，因此必須使用原始檔名。
+            LpkIndex index = LpkV4.Decode(fileStream, Path.GetFileName(input), LpkV4.DEFAULT_MIXING);
+            foreach (var record in index.Records)
+            {
+                string target = Path.GetFullPath(Path.Combine(baseDir, record.Path.Replace('\\', '/').TrimStart('/')));
+                if (!IsSameOrDescendant(target, baseDir))
+                {
+                    Console.WriteLine($"略過不安全的路徑：{input}：{record.Path}");
+                    continue;
+                }
+
+                try
+                {
+                    byte[] data = LpkV4.Extract(fileStream, record, index.DataBegin, digits, nonce);
+                    Directory.CreateDirectory(Path.GetDirectoryName(target));
+                    File.WriteAllBytes(target, data);
+                }
+                catch (LpkException ex)
+                {
+                    Console.WriteLine($"LPK 檔案解包失敗：{input}：{record.Path}：{ex.Message}");
+                }
+            }
+        }
+        catch (LpkException ex)
+        {
+            Console.WriteLine($"LPK 解包失敗：{input}：{ex.Message}");
         }
     }
 
@@ -295,11 +343,11 @@ public static class RhoPacker
             foreach (var item in rhoFolders.GetFilesInfo())
             {
                 string fullName = (item.FullName).Replace(".rho", "");
-                string Name = Path.Combine(input, "..", Path.GetDirectoryName(fullName));
+                string Name = Path.Combine(input, Path.GetDirectoryName(fullName));
                 if (!Directory.Exists(Name))
                     Directory.CreateDirectory(Name);
                 byte[] data = item.GetData();
-                using (FileStream fileStream = new FileStream(Path.Combine(input, "..", fullName), FileMode.OpenOrCreate))
+                using (FileStream fileStream = new FileStream(Path.Combine(input, fullName), FileMode.OpenOrCreate))
                 {
                     fileStream.Write(data, 0, data.Length);
                 }
