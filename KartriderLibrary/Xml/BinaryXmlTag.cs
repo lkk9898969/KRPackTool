@@ -56,22 +56,30 @@ public class BinaryXmlTag : DynamicObject
         if (HaveAttributes)
         {
             var attFormat = new List<string>();
-            foreach (var KeyPair in Attributes) attFormat.Add($"{KeyPair.Key}=\"{KeyPair.Value}\"");
+            foreach (var KeyPair in Attributes) attFormat.Add($"{KeyPair.Key}='{EscapeAttribute(KeyPair.Value)}'");
             Att = $" {string.Join(" ", attFormat)}";
         }
 
         Start = $"<{Name}{Att}{addition}>";
+        var text = EscapeText(Text ?? "");
         if (OneLine)
         {
-            formater.AddString(nowLevel, TextAlign.Top, $"{Start}{Text ?? ""}{End}");
+            formater.AddString(nowLevel, TextAlign.Top, $"{Start}{text}{End}");
         }
         else
         {
-            formater.AddString(nowLevel, TextAlign.Top, $"{Start}{Text ?? ""}");
+            formater.AddString(nowLevel, TextAlign.Top, $"{Start}{text}");
             foreach (var sub in Children) sub.ToString(ref formater, nowLevel + 1);
             formater.AddString(nowLevel, TextAlign.Top, End);
         }
     }
+
+    private static string EscapeText(string value) =>
+        value.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");
+
+    // 同遊戲自帶的 xml：屬性用單引號，只跳脫 & < > '（遊戲的解析器不一定支援其他跳脫）
+    private static string EscapeAttribute(string value) =>
+        EscapeText(value).Replace("'", "&apos;");
 
     public override bool TryGetMember(GetMemberBinder binder, out object result)
     {

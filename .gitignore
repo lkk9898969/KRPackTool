@@ -264,3 +264,6 @@ FakesAssemblies/
 
 # Visual Studio 6 workspace options file
 *.opt
+
+# Local-only GUI helper project (rho5 structure browser), kept out of the repo
+/KRPackToolGUI/

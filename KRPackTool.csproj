@@ -43,10 +43,13 @@
   <ItemGroup>
     <Compile Remove="TestProject\**" />
     <Compile Remove="win-x64\**" />
+    <Compile Remove="KRPackToolGUI\**" />
     <EmbeddedResource Remove="TestProject\**" />
     <EmbeddedResource Remove="win-x64\**" />
+    <EmbeddedResource Remove="KRPackToolGUI\**" />
     <None Remove="TestProject\**" />
     <None Remove="win-x64\**" />
+    <None Remove="KRPackToolGUI\**" />
   </ItemGroup>
   <ItemGroup>
     <None Remove=".gitignore" />
